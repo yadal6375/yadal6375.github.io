@@ -3,34 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>むすぶ — 線をつなぐパズル</title>
+<title>あそびば — ちいさなブラウザゲーム</title>
 
-<meta property="og:url" content="https://yadal6375.github.io/musubu/">
-<meta property="og:image" content="https://yadal6375.github.io/musubu/og.png">
-<!-- ▲ og:image は絶対URLでないと X のカードに画像が出ません -->
+<!-- ▼ 公開前に：サイト名（あそびば）はお好きな名前に、URLはご自分のものに -->
+<meta property="og:url" content="https://yadal6375.github.io/asobiba/">
+<meta property="og:image" content="https://yadal6375.github.io/asobiba/og.png">
+<!-- ▲ -->
 
-<meta name="description" content="図形をタップして回し、線の端をすべてつなぐパズル。つながるほど色と音が流れ出します。">
+<meta name="description" content="ちいさなブラウザゲームの置き場。ひとつずつ増えていきます。">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="むすぶ">
-<meta property="og:title" content="むすぶ — 線をつなぐパズル">
-<meta property="og:description" content="図形をタップして回し、線の端をすべてつなぐパズル。つながるほど色と音が流れ出します。">
+<meta property="og:title" content="あそびば — ちいさなブラウザゲーム">
+<meta property="og:description" content="ちいさなブラウザゲームの置き場。ひとつずつ増えていきます。">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="むすぶ — 線をつなぐパズル">
-<meta name="twitter:description" content="図形をタップして回し、線の端をすべてつなぐパズル。つながるほど色と音が流れ出します。">
-<meta name="twitter:image" content="https://yadal6375.github.io/musubu/og.png">
-<meta name="twitter:image:alt" content="つながった線が水色から藍色へ流れていく盤面と、明朝体のタイトル">
+<meta name="twitter:image" content="https://yadal6375.github.io/asobiba/og.png">
 <meta name="theme-color" content="#E7E8E2">
 <meta name="color-scheme" content="light">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%277%27%20fill%3D%27%23E7E8E2%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke-width%3D%274.5%27%20stroke-linecap%3D%27round%27%3E%3Cpath%20d%3D%27M16%205%20Q16%2016%2027%2016%27%20stroke%3D%27%233D3AA8%27%2F%3E%3Cpath%20d%3D%27M5%2016%20H16%27%20stroke%3D%27%2316A0A6%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
-<link rel="apple-touch-icon" href="og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%277%27%20fill%3D%27%23E7E8E2%27%2F%3E%3Cpath%20d%3D%27M16%204%20V16%20Q16%2024%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27%233D3AA8%27%20stroke-width%3D%274.5%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2716%27%20cy%3D%276%27%20r%3D%273.4%27%20fill%3D%27%2316A0A6%27%2F%3E%3C%2Fsvg%3E">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+
 <style>
   :root{
     --paper:#E7E8E2;
-    --paper-2:#DCDED6;
+    --paper-2:#DEE0D8;
     --ink:#23282A;
     --muted:#8E948F;
     --flow-a:#16A0A6;
@@ -39,701 +37,236 @@
 
     --display:"Zen Old Mincho", ui-serif, "Hiragino Mincho ProN", serif;
     --body:"Zen Kaku Gothic New", ui-sans-serif, "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
-    --mono:"DM Mono", ui-monospace, "SFMono-Regular", monospace;
+    --mono:"DM Mono", ui-monospace, monospace;
+
+    --spine-x:clamp(22px, 6vw, 44px);   /* 線の位置 */
   }
 
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%}
+  html{scroll-behavior:smooth}
   body{
+    margin:0;
     background:var(--paper);
     color:var(--ink);
     font-family:var(--body);
     font-weight:300;
     -webkit-font-smoothing:antialiased;
-    overscroll-behavior:none;
+    line-height:1.8;
   }
+  a{color:inherit}
 
-  .app{
-    height:100dvh;
-    display:flex;
-    flex-direction:column;
-    padding:clamp(18px,3.4vw,34px);
-    padding-top:max(clamp(18px,3.4vw,34px), env(safe-area-inset-top));
-    padding-bottom:max(clamp(18px,3.4vw,34px), env(safe-area-inset-bottom));
-    gap:clamp(12px,2vw,22px);
-    max-width:940px;
+  .page{
+    max-width:640px;
     margin:0 auto;
-    width:100%;
+    padding:clamp(40px,9vh,96px) clamp(20px,5vw,40px) 64px;
   }
 
-  /* ---- header ---- */
-  header{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:16px;
+  /* ---------- 線（この頁の背骨） ---------- */
+  .spine{
+    position:relative;
+    padding-left:var(--spine-x);
   }
+  .spine::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:.5em;
+    bottom:0;
+    width:2px;
+    background:linear-gradient(to bottom, var(--flow-a), var(--flow-b) 78%, transparent);
+    transform-origin:top;
+    animation:grow 1.1s cubic-bezier(.22,.9,.3,1) both;
+  }
+  @keyframes grow{ from{transform:scaleY(0)} to{transform:scaleY(1)} }
+
+  .knot{
+    position:absolute;
+    left:calc(var(--spine-x) * -1 - 5px);
+    top:.52em;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--flow-a);
+    transition:background .2s ease, border-color .2s ease, transform .2s ease;
+  }
+
+  /* ---------- 見出し ---------- */
+  header{position:relative;margin-bottom:clamp(48px,10vh,84px)}
+  header .knot{border-color:var(--ink);background:var(--ink)}
   h1{
     font-family:var(--display);
     font-weight:600;
-    font-size:clamp(22px,4.6vw,30px);
-    letter-spacing:.32em;
+    font-size:clamp(30px,7.4vw,42px);
+    letter-spacing:.3em;
     margin:0;
-    line-height:1;
-    text-indent:.32em;
+    line-height:1.25;
   }
   .tagline{
-    margin:.7em 0 0;
-    font-size:clamp(11px,2.5vw,13px);
+    margin:.9em 0 0;
     color:var(--muted);
-    letter-spacing:.06em;
-  }
-  .readout{
-    display:flex;
-    gap:clamp(14px,3vw,26px);
-    text-align:right;
-  }
-  .stat{display:flex;flex-direction:column;align-items:flex-end;gap:.35em}
-  .stat .label{
-    font-size:10px;
-    letter-spacing:.22em;
-    color:var(--muted);
-  }
-  .stat .value{
-    font-family:var(--display);
-    font-weight:400;
-    font-size:clamp(24px,5.4vw,34px);
-    line-height:.9;
-    font-variant-numeric:tabular-nums;
-  }
-  .stat .value.small{
-    font-family:var(--mono);
-    font-size:clamp(16px,3.6vw,20px);
-    font-weight:400;
-    color:var(--ink);
+    font-size:clamp(13px,3.2vw,15px);
+    letter-spacing:.05em;
+    max-width:34em;
   }
 
-  /* ---- board ---- */
-  #stage{
-    flex:1;
-    min-height:0;
-    display:grid;
-    place-items:center;
-  }
-  canvas{
+  /* ---------- 作品 ---------- */
+  .work{
+    position:relative;
     display:block;
-    touch-action:manipulation;
-    cursor:pointer;
+    text-decoration:none;
+    padding:20px 22px 22px;
+    margin:0 0 clamp(30px,6vh,48px) -22px;
+    border-radius:14px;
+    transition:background .2s ease;
   }
+  .work:hover,.work:focus-visible{background:var(--paper-2)}
+  .work:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .work:hover .knot,.work:focus-visible .knot{
+    background:var(--accent);
+    border-color:var(--accent);
+    transform:scale(1.25);
+  }
+  .work .knot{left:calc(var(--spine-x) * -1 - 5px + 22px)}  /* ネガティブマージン分を戻す */
 
-  /* ---- footer ---- */
-  footer{
+  .work .date{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.16em;
+    color:var(--muted);
+  }
+  .work h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(22px,5.4vw,28px);
+    letter-spacing:.22em;
+    margin:.25em 0 .3em;
+    line-height:1.3;
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    gap:14px;
-    min-height:44px;
+    gap:.55em;
   }
-  .tools{display:flex;align-items:center;gap:10px}
-  button{
-    font-family:var(--body);
-    font-size:13px;
-    font-weight:400;
-    letter-spacing:.08em;
+  .work p{
+    margin:0;
+    font-size:clamp(13px,3.2vw,15px);
     color:var(--ink);
-    background:transparent;
-    border:1px solid rgba(35,40,42,.28);
+    max-width:30em;
+  }
+  .work .tags{
+    margin-top:.9em;
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .work .tags span{
+    font-size:11px;
+    letter-spacing:.12em;
+    color:var(--muted);
+    border:1px solid rgba(35,40,42,.22);
     border-radius:999px;
-    padding:10px 20px;
-    cursor:pointer;
-    transition:background .18s ease, border-color .18s ease, color .18s ease, opacity .18s ease;
+    padding:3px 11px;
   }
-  button:hover{background:var(--paper-2);border-color:rgba(35,40,42,.5)}
-  button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-  button.primary{
-    border-color:var(--accent);
-    color:var(--accent);
-  }
-  button.primary:hover{background:rgba(179,59,134,.09)}
 
-  .status{
-    font-size:clamp(12px,2.8vw,14px);
-    letter-spacing:.14em;
+  /* むすぶの印：角の駒。カードに触れると回って線がつながる */
+  .mark{flex:0 0 auto;width:.95em;height:.95em}
+  .mark .elbow{
+    transform-origin:50% 50%;
+    transition:transform .35s cubic-bezier(.34,1.4,.5,1);
+  }
+  .work:hover .mark .elbow,.work:focus-visible .mark .elbow{transform:rotate(90deg)}
+
+  /* くみたてるの印：触れると部品が持ち上がる */
+  .mark.build path{fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  .mark.build .ghost path{stroke:rgba(35,40,42,.18)}
+  .mark.build .lift path{stroke:var(--flow-b)}
+  .mark.build .lift{
+    transform-origin:50% 50%;
+    transition:transform .35s cubic-bezier(.34,1.3,.5,1);
+  }
+  .work:hover .mark.build .lift,
+  .work:focus-visible .mark.build .lift{transform:translateY(-2.6px)}
+
+  /* ---------- つくりかけ ---------- */
+  .soon{position:relative;color:var(--muted)}
+  .soon .knot{border-style:dashed;border-color:var(--muted)}
+  .soon p{
+    margin:0;
+    font-size:clamp(13px,3.2vw,15px);
+    letter-spacing:.05em;
+  }
+
+  footer{
+    margin-top:clamp(56px,12vh,96px);
+    padding-left:var(--spine-x);
+    font-size:12px;
     color:var(--muted);
-    transition:color .3s ease, opacity .3s ease;
+    letter-spacing:.08em;
   }
-  .status.done{
-    color:var(--accent);
-    font-family:var(--display);
-    letter-spacing:.24em;
-  }
-  button[aria-pressed="false"]{
-    border-style:dashed;
-    color:var(--muted);
-    border-color:rgba(35,40,42,.2);
-  }
+  footer a{text-underline-offset:3px}
 
-  #next[hidden],#reveal[hidden]{display:none}
-
-  @media (max-width:560px){
-    footer{flex-direction:column;align-items:stretch;gap:10px}
-    .tools{justify-content:space-between}
-  }
-  @media (max-width:430px){
-    h1{letter-spacing:.24em;text-indent:.24em}
-    button{padding:9px 15px;font-size:12px}
+  @media (prefers-reduced-motion: reduce){
+    .spine::before{animation:none}
+    .mark .elbow,.knot{transition:none}
+    html{scroll-behavior:auto}
   }
 </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <div>
-      <h1>むすぶ</h1>
-      <p class="tagline">図形をタップして回し、線の端をすべてつなぐ。</p>
-    </div>
-    <div class="readout">
-      <div class="stat">
-        <span class="label">レベル</span>
-        <span class="value" id="lv">1</span>
-      </div>
-      <div class="stat">
-        <span class="label">タップ</span>
-        <span class="value small" id="mv">0</span>
-      </div>
-    </div>
-  </header>
+<div class="page">
+  <div class="spine">
 
-  <main id="stage">
-    <canvas id="c"></canvas>
-  </main>
+    <header>
+      <span class="knot" aria-hidden="true"></span>
+      <!-- サイト名はここ。og:title / title タグも忘れずに -->
+      <h1>あそびば</h1>
+      <p class="tagline">ちいさなブラウザゲームの置き場。ひとつずつ、この線の先に増えていきます。</p>
+    </header>
+
+    <a class="work" href="./musubu/">
+      <span class="knot" aria-hidden="true"></span>
+      <span class="date">2026.08</span>
+      <h2>
+        むすぶ
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M3 16 H16" fill="none" stroke="#16A0A6" stroke-width="4.5" stroke-linecap="round"/>
+          <g class="elbow">
+            <path d="M16 29 Q16 16 29 16" fill="none" stroke="#3D3AA8" stroke-width="4.5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </h2>
+      <p>図形をタップして回し、線の端をすべてつなぐパズル。つながるほど色が流れ、音が高くなっていきます。</p>
+      <span class="tags"><span>パズル</span><span>音が鳴る</span><span>無限に遊べる</span></span>
+    </a>
+
+    <a class="work" href="./kumitateru/">
+      <span class="knot" aria-hidden="true"></span>
+      <span class="date">2026.08</span>
+      <h2>
+        くみたてる
+        <svg class="mark build" viewBox="0 0 32 32" aria-hidden="true">
+          <g class="ghost">
+            <path d="M16 6 V26 M7 12 H25 M16 12 L8 25 M16 12 L24 25"/>
+          </g>
+          <g class="lift">
+            <path d="M16 4 V24 M7 10 H25 M16 10 L8 23 M16 10 L24 23"/>
+          </g>
+        </svg>
+      </h2>
+      <p>部品を台に並べて漢字をつくるパズル。木と木で林、林と木で森。組み上げた字が、次の部品になります。</p>
+      <span class="tags"><span>組み立て</span><span>実際の字形</span><span>常用漢字2136字</span></span>
+    </a>
+
+    <div class="soon">
+      <span class="knot" aria-hidden="true"></span>
+      <p>つくりかけ — つぎの一手を考え中。</p>
+    </div>
+
+  </div>
 
   <footer>
-    <div class="tools">
-      <button id="regen">問題を作り直す</button>
-      <button id="reveal">答えを見る</button>
-      <button id="sound" aria-pressed="true">音を切る</button>
-    </div>
-    <div class="tools">
-      <span class="status" id="status">つながっていない端が残っている</span>
-      <button class="primary" id="next" hidden>つぎのレベル</button>
-    </div>
+    <!-- ▼ ご自分のアカウントに書き換えてください -->
+    <a href="https://x.com/Ken_logs">X で新作をお知らせします</a>
   </footer>
 </div>
-
-<script>
-(() => {
-  "use strict";
-
-  const cv = document.getElementById("c");
-  const ctx = cv.getContext("2d");
-  const stage = document.getElementById("stage");
-  const lvEl = document.getElementById("lv");
-  const mvEl = document.getElementById("mv");
-  const statusEl = document.getElementById("status");
-  const nextBtn = document.getElementById("next");
-  const regenBtn = document.getElementById("regen");
-  const revealBtn = document.getElementById("reveal");
-
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  // 上・右・下・左
-  const DX = [0, 1, 0, -1];
-  const DY = [-1, 0, 1, 0];
-  const rotMask = (m, k) => { k = ((k % 4) + 4) % 4; return ((m << k) | (m >> (4 - k))) & 15; };
-  // 何回まわすともとの形に戻るか（まっすぐな線は2回、十字は1回）
-  const period = m => { for (let k = 1; k < 4; k++) if (rotMask(m, k) === m) return k; return 4; };
-
-  const COL_IDLE = [142, 148, 143];
-  const COL_A    = [22, 160, 166];
-  const COL_B    = [61, 58, 168];
-  const COL_ACC  = [179, 59, 134];
-
-  const mix = (a, b, t) => [
-    a[0] + (b[0] - a[0]) * t,
-    a[1] + (b[1] - a[1]) * t,
-    a[2] + (b[2] - a[2]) * t,
-  ];
-  const css = c => `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
-
-  // ---------- 状態 ----------
-  let level = 1;
-  let cols = 3, rows = 3;
-  let base = [];      // 正解形（回転前のマスク）
-  let turns = [];     // 何回まわしたか（累積）
-  let angle = [];     // 表示中の角度（rad）
-  let color = [];     // 表示中の色
-  let moves = 0;
-  let solved = false;
-  let solvedBy = null;   // "player" か "reveal"
-  let locked = false;    // 答えの組み立て中は操作を止める
-  let revealAt = [];     // 各マスが動きだす時刻
-  let revealTo = [];     // 各マスの目標回転数
-  let revealLeft = 0;
-  let cell = 60, ox = 0, oy = 0;
-  let hover = -1;
-  let ripple = -1;    // 正解演出の開始時刻
-  let running = false;
-
-  const idx = (x, y) => y * cols + x;
-
-  // ---------- 音 ----------
-  // 外部ファイルは使わず、その場で合成する
-  const PENTA = [0, 2, 4, 7, 9];          // ヨナ抜き音階。どう鳴らしても濁らない
-  let actx = null, master = null, muted = false;
-
-  function audio() {
-    if (muted) return null;
-    if (!actx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return null;
-      actx = new AC();
-      master = actx.createGain();
-      master.gain.value = 0.6;
-      master.connect(actx.destination);
-    }
-    if (actx.state === "suspended") actx.resume();
-    return actx;
-  }
-
-  // 塊の大きさ → 音の高さ。大きくつながるほど高く澄んでいく
-  function pitchFor(size) {
-    const step = Math.round(reach(size) * 9);           // 0〜9段
-    return PENTA[step % 5] + 12 * Math.floor(step / 5);
-  }
-
-  function bell(semi, when = 0, dur = 0.9, gain = 0.13) {
-    const a = audio();
-    if (!a) return;
-    const t = a.currentTime + when;
-    const hz = 261.63 * Math.pow(2, semi / 12);
-    const g = a.createGain();
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(gain, t + 0.014);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    g.connect(master);
-    [[1, "sine", 1], [2, "triangle", 0.16]].forEach(([mul, type, lvl]) => {
-      const o = a.createOscillator();
-      const og = a.createGain();
-      o.type = type;
-      o.frequency.value = hz * mul;
-      og.gain.value = lvl;
-      o.connect(og); og.connect(g);
-      o.start(t); o.stop(t + dur + 0.03);
-    });
-  }
-
-  // 回したときの、木をたたくような短い音
-  function tick() {
-    const a = audio();
-    if (!a) return;
-    const t = a.currentTime;
-    const o = a.createOscillator(), g = a.createGain(), f = a.createBiquadFilter();
-    o.type = "triangle";
-    o.frequency.setValueAtTime(430, t);
-    o.frequency.exponentialRampToValueAtTime(170, t + 0.055);
-    f.type = "lowpass"; f.frequency.value = 1500;
-    g.gain.setValueAtTime(0.075, t);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.085);
-    o.connect(f); f.connect(g); g.connect(master);
-    o.start(t); o.stop(t + 0.1);
-  }
-
-  function fanfare() {
-    [0, 4, 7, 12, 16, 19].forEach((s, k) => bell(s, k * 0.075, 1.5 - k * 0.1, 0.12));
-    bell(-12, 0, 2.2, 0.09);
-  }
-
-  function chord() {                                     // 答えを見たときの、静かな着地
-    [0, 7].forEach((s, k) => bell(s, k * 0.09, 1.6, 0.075));
-  }
-
-  function dims(n) {
-    const seq = [[3,3],[4,3],[4,4],[5,4],[5,5],[6,5],[6,6],[7,6],[7,7],[8,7],[8,8]];
-    return seq[Math.min(n - 1, seq.length - 1)];
-  }
-
-  // ---------- 生成 ----------
-  function generate() {
-    [cols, rows] = dims(level);
-    const N = cols * rows;
-    base = new Array(N).fill(0);
-
-    // すべてのマスを通る木をつくる（= どのマスにも必ず線が来る）
-    const edges = [];
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        if (x + 1 < cols) edges.push([idx(x, y), idx(x + 1, y), 1]); // 右
-        if (y + 1 < rows) edges.push([idx(x, y), idx(x, y + 1), 2]); // 下
-      }
-    }
-    for (let i = edges.length - 1; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0;
-      [edges[i], edges[j]] = [edges[j], edges[i]];
-    }
-
-    const parent = Array.from({ length: N }, (_, i) => i);
-    const find = a => { while (parent[a] !== a) { parent[a] = parent[parent[a]]; a = parent[a]; } return a; };
-
-    const extra = Math.min(0.05 + level * 0.02, 0.24);
-    const add = (a, b, d) => { base[a] |= 1 << d; base[b] |= 1 << ((d + 2) % 4); };
-
-    for (const [a, b, d] of edges) {
-      const ra = find(a), rb = find(b);
-      if (ra !== rb) { parent[ra] = rb; add(a, b, d); }
-      else if (Math.random() < extra) add(a, b, d);   // 輪をつくる余分な線
-    }
-
-    // まわしてバラす
-    turns = new Array(N).fill(0);
-    for (let attempt = 0; attempt < 30; attempt++) {
-      for (let i = 0; i < N; i++) turns[i] = (Math.random() * 4) | 0;
-      if (!isSolved()) break;
-    }
-
-    angle = turns.map(t => t * Math.PI / 2);
-    color = new Array(N).fill(0).map(() => COL_IDLE.slice());
-    moves = 0;
-    solved = false;
-    solvedBy = null;
-    locked = false;
-    revealAt = new Array(N).fill(-1);
-    revealTo = new Array(N).fill(0);
-    revealLeft = 0;
-    ripple = -1;
-    hover = -1;
-
-    lvEl.textContent = String(level);
-    mvEl.textContent = "0";
-    statusEl.textContent = "つながっていない端が残っている";
-    statusEl.classList.remove("done");
-    nextBtn.hidden = true;
-    revealBtn.hidden = false;
-
-    layout();
-    kick();
-  }
-
-  const maskAt = i => rotMask(base[i], turns[i]);
-
-  function isSolved() {
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const i = idx(x, y), m = maskAt(i);
-        for (let d = 0; d < 4; d++) {
-          const has = (m >> d) & 1;
-          const nx = x + DX[d], ny = y + DY[d];
-          if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) { if (has) return false; }
-          else if (has !== ((maskAt(idx(nx, ny)) >> ((d + 2) % 4)) & 1)) return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  // つながっている塊の大きさを、マスごとに求める
-  function componentSizes() {
-    const N = cols * rows;
-    const p = Array.from({ length: N }, (_, i) => i);
-    const find = a => { while (p[a] !== a) { p[a] = p[p[a]]; a = p[a]; } return a; };
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const i = idx(x, y), m = maskAt(i);
-        for (const d of [1, 2]) {                       // 右・下だけ見れば十分
-          const nx = x + DX[d], ny = y + DY[d];
-          if (nx >= cols || ny >= rows) continue;
-          const j = idx(nx, ny);
-          if (((m >> d) & 1) && ((maskAt(j) >> ((d + 2) % 4)) & 1)) {
-            const ra = find(i), rb = find(j);
-            if (ra !== rb) p[ra] = rb;
-          }
-        }
-      }
-    }
-
-    const count = new Array(N).fill(0);
-    for (let i = 0; i < N; i++) count[find(i)]++;
-
-    const size = new Array(N);
-    for (let i = 0; i < N; i++) size[i] = count[find(i)];
-    return size;
-  }
-
-  // 塊が大きいほど 0→1 に近づく尺度。色と音はどちらもこれを使う
-  const reach = s => Math.min(1, (s - 1) / Math.max(2, cols * rows * 0.55));
-
-  // つながっている塊ごとに色を決める（大きいほど濃く流れる）
-  function targetColors() {
-    const size = componentSizes();
-    return size.map(s => {
-      const t = reach(s);
-      return t < 0.5 ? mix(COL_IDLE, COL_A, t / 0.5) : mix(COL_A, COL_B, (t - 0.5) / 0.5);
-    });
-  }
-
-  // ---------- 表示 ----------
-  function layout() {
-    const availW = stage.clientWidth;
-    const availH = stage.clientHeight;
-    if (!availW || !availH) return;
-
-    cell = Math.floor(Math.min(availW / cols, availH / rows));
-    cell = Math.max(28, cell);
-
-    const w = cell * cols, h = cell * rows;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
-    cv.style.width = w + "px";
-    cv.style.height = h + "px";
-    cv.width = Math.round(w * dpr);
-    cv.height = Math.round(h * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ox = 0; oy = 0;
-    draw();
-  }
-
-  function tile(m, s, lw) {
-    const h = s / 2;
-    const dirs = [];
-    for (let d = 0; d < 4; d++) if ((m >> d) & 1) dirs.push(d);
-    if (!dirs.length) return;
-
-    const px = d => DX[d] * h, py = d => DY[d] * h;
-
-    if (dirs.length === 1) {
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(px(dirs[0]), py(dirs[0]));
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(0, 0, lw * 0.72, 0, Math.PI * 2);
-      ctx.fill();
-      return;
-    }
-    if (dirs.length === 2 && (dirs[0] + 2) % 4 !== dirs[1]) {   // まがり角はやわらかい弧に
-      ctx.beginPath();
-      ctx.moveTo(px(dirs[0]), py(dirs[0]));
-      ctx.quadraticCurveTo(0, 0, px(dirs[1]), py(dirs[1]));
-      ctx.stroke();
-      return;
-    }
-    ctx.beginPath();
-    for (const d of dirs) { ctx.moveTo(0, 0); ctx.lineTo(px(d), py(d)); }
-    ctx.stroke();
-  }
-
-  function draw() {
-    const w = cell * cols, h = cell * rows;
-    ctx.clearRect(0, 0, w, h);
-    const lw = Math.max(2.4, cell * 0.105);
-
-    if (hover >= 0 && !solved) {
-      const hx = (hover % cols) * cell, hy = ((hover / cols) | 0) * cell;
-      ctx.fillStyle = "rgba(35,40,42,.055)";
-      const r = cell * 0.18;
-      ctx.beginPath();
-      ctx.roundRect(hx + 2, hy + 2, cell - 4, cell - 4, r);
-      ctx.fill();
-    }
-
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = lw;
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const i = idx(x, y);
-        if (!base[i]) continue;
-        ctx.save();
-        ctx.translate(x * cell + cell / 2, y * cell + cell / 2);
-        ctx.rotate(angle[i]);
-        const c = css(color[i]);
-        ctx.strokeStyle = c;
-        ctx.fillStyle = c;
-        tile(base[i], cell, lw);
-        ctx.restore();
-      }
-    }
-
-    if (ripple >= 0) {
-      const t = (performance.now() - ripple) / 1000;
-      if (t < 1) {
-        const maxR = Math.hypot(w, h) / 2;
-        ctx.save();
-        ctx.strokeStyle = `rgba(179,59,134,${(1 - t) * 0.6})`;
-        ctx.lineWidth = lw * 1.6 * (1 - t) + 1;
-        ctx.beginPath();
-        ctx.arc(w / 2, h / 2, maxR * t * 1.1, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      } else ripple = -1;
-    }
-  }
-
-  // ---------- アニメーション ----------
-  let last = 0;
-  let lastRevealNote = 0;
-  function loop(now) {
-    const dt = Math.min(64, now - (last || now));
-    last = now;
-    let busy = false;
-
-    // 答えの波：時刻が来たマスから順に正しい向きへ
-    if (revealLeft > 0) {
-      let landed = false;
-      for (let i = 0; i < revealAt.length; i++) {
-        if (revealAt[i] < 0) continue;
-        if (now >= revealAt[i]) {
-          turns[i] = revealTo[i];
-          revealAt[i] = -1;
-          revealLeft--;
-          landed = true;
-        }
-      }
-      if (landed) {
-        colorGoal = targetColors();
-        // 波が広がるにつれて音階も上がっていく（鳴らしすぎないよう間引く）
-        if (now - lastRevealNote > 48) {
-          lastRevealNote = now;
-          const size = componentSizes();
-          bell(pitchFor(Math.max(...size)), 0, 0.7, 0.075);
-        }
-      }
-      if (revealLeft > 0) busy = true;
-      else finishReveal();
-    }
-
-    const kA = reduce ? 1 : 1 - Math.exp(-dt / 62);
-    const kC = reduce ? 1 : 1 - Math.exp(-dt / 130);
-
-    for (let i = 0; i < base.length; i++) {
-      const goal = turns[i] * Math.PI / 2;
-      const da = goal - angle[i];
-      if (Math.abs(da) > 0.0012) { angle[i] += da * kA; busy = true; }
-      else angle[i] = goal;
-
-      const tc = colorGoal[i] || COL_IDLE;
-      const c = color[i];
-      for (let k = 0; k < 3; k++) {
-        const d = tc[k] - c[k];
-        if (Math.abs(d) > 0.4) { c[k] += d * kC; busy = true; }
-        else c[k] = tc[k];
-      }
-    }
-    if (ripple >= 0) busy = true;
-
-    draw();
-    if (busy) requestAnimationFrame(loop);
-    else running = false;
-  }
-
-  let colorGoal = [];
-  function kick() {
-    colorGoal = targetColors();
-    // 自力で解いたときだけ、色がもう一段だけ華やぐ
-    if (solved && solvedBy === "player") colorGoal = colorGoal.map(() => mix(COL_B, COL_ACC, 0.28));
-    if (!running) { running = true; last = 0; requestAnimationFrame(loop); }
-  }
-
-  // ---------- 答えを見る ----------
-  function revealAnswer() {
-    if (solved || locked) return;
-    locked = true;
-    hover = -1;
-    revealBtn.hidden = true;
-    statusEl.textContent = "答えを組み立てている";
-
-    const cx = (cols - 1) / 2, cy = (rows - 1) / 2;
-    const far = Math.hypot(cx, cy) || 1;
-    const sweep = reduce ? 0 : 900;
-    const now = performance.now();
-
-    revealLeft = 0;
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const i = idx(x, y);
-        const p = period(base[i]);
-        revealTo[i] = Math.round(turns[i] / p) * p;   // 今の向きから最短の正解
-        const d = Math.hypot(x - cx, y - cy) / far;   // 中心からの距離で波をつくる
-        revealAt[i] = now + d * sweep + (reduce ? 0 : Math.random() * 70);
-        revealLeft++;
-      }
-    }
-    kick();
-  }
-
-  function finishReveal() {
-    locked = false;
-    solved = true;
-    solvedBy = "reveal";
-    statusEl.textContent = "これが答え";
-    nextBtn.hidden = false;
-    colorGoal = targetColors();
-    chord();
-  }
-
-  // ---------- 操作 ----------
-  function cellFromEvent(e) {
-    const r = cv.getBoundingClientRect();
-    const x = Math.floor((e.clientX - r.left) / cell);
-    const y = Math.floor((e.clientY - r.top) / cell);
-    if (x < 0 || y < 0 || x >= cols || y >= rows) return -1;
-    return idx(x, y);
-  }
-
-  function rotate(i, dir) {
-    if (i < 0 || solved || locked || !base[i]) return;
-    const before = componentSizes()[i];
-    turns[i] += dir;
-    moves++;
-    mvEl.textContent = String(moves);
-
-    tick();
-    const after = componentSizes()[i];
-    if (after > before) bell(pitchFor(after), 0.02, 0.9, 0.12);
-
-    if (isSolved()) {
-      solved = true;
-      solvedBy = "player";
-      statusEl.textContent = "すべてつながった";
-      statusEl.classList.add("done");
-      nextBtn.hidden = false;
-      revealBtn.hidden = true;
-      hover = -1;
-      if (!reduce) ripple = performance.now();
-      fanfare();
-    }
-    kick();
-  }
-
-  cv.addEventListener("pointerdown", e => { e.preventDefault(); rotate(cellFromEvent(e), 1); });
-  cv.addEventListener("contextmenu", e => { e.preventDefault(); rotate(cellFromEvent(e), -1); });
-  cv.addEventListener("pointermove", e => {
-    if (e.pointerType !== "mouse" || solved || locked) return;
-    const i = cellFromEvent(e);
-    const h = (i >= 0 && base[i]) ? i : -1;
-    if (h !== hover) { hover = h; kick(); }
-  });
-  cv.addEventListener("pointerleave", () => { if (hover !== -1) { hover = -1; kick(); } });
-
-  nextBtn.addEventListener("click", () => { level++; generate(); });
-  regenBtn.addEventListener("click", () => generate());
-  revealBtn.addEventListener("click", revealAnswer);
-
-  const soundBtn = document.getElementById("sound");
-  soundBtn.addEventListener("click", () => {
-    muted = !muted;
-    soundBtn.textContent = muted ? "音を出す" : "音を切る";
-    soundBtn.setAttribute("aria-pressed", String(!muted));
-    if (!muted) bell(7, 0, 0.6, 0.1);                    // 切り替わったことが耳でわかるように
-  });
-
-  let rt;
-  addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(layout, 90); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
-
-  generate();
-})();
-</script>
 </body>
 </html>

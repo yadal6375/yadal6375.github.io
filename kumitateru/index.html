@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>くみたてる — 漢字を組み立てるゲーム</title>
+
+<meta property="og:url" content="https://yadal6375.github.io/asobiba/kumitateru/">
+<meta property="og:image" content="https://yadal6375.github.io/asobiba/kumitateru/og.png">
+<meta name="twitter:image" content="https://yadal6375.github.io/asobiba/kumitateru/og.png">
+
+<meta name="description" content="部品を並べて漢字を組み立てる。木と木で林、林と木で森。常用漢字2136字が待っています。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="くみたてる">
+<meta property="og:title" content="くみたてる — 漢字を組み立てるゲーム">
+<meta property="og:description" content="部品を並べて漢字を組み立てる。木と木で林、林と木で森。">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="くみたてる — 漢字を組み立てるゲーム">
+<meta name="twitter:description" content="部品を並べて漢字を組み立てる。木と木で林、林と木で森。">
+<meta name="twitter:image:alt" content="部品の木が三つ、組み上がって森になる図">
+<meta name="theme-color" content="#E7E8E2">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%277%27%20fill%3D%27%23E7E8E2%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke-width%3D%272.6%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M10%2013%20V25%20M5%2016%20H15%20M10%2016%20L6%2024%20M10%2016%20L14%2024%27%20stroke%3D%27%2316A0A6%27%2F%3E%3Cpath%20d%3D%27M22%2013%20V25%20M17%2016%20H27%20M22%2016%20L18%2024%20M22%2016%20L26%2024%27%20stroke%3D%27%233D3AA8%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#E7E8E2;
+    --paper-2:#DEE0D8;
+    --ink:#23282A;
+    --muted:#8E948F;
+    --flow-a:#16A0A6;
+    --flow-b:#3D3AA8;
+    --accent:#B33B86;
+
+    --display:"Zen Old Mincho", ui-serif, "Hiragino Mincho ProN", serif;
+    --body:"Zen Kaku Gothic New", ui-sans-serif, "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
+    --mono:"DM Mono", ui-monospace, "SFMono-Regular", monospace;
+
+    --line:rgba(35,40,42,.22);
+    --line-2:rgba(35,40,42,.12);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    font-weight:300;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+    -webkit-text-size-adjust:100%;
+  }
+  button{font-family:inherit;color:inherit}
+
+  .app{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    gap:clamp(8px,1.6vh,14px);
+    max-width:560px;
+    margin:0 auto;
+    padding:clamp(12px,2.6vw,22px);
+    padding-top:max(clamp(12px,2.6vw,22px), env(safe-area-inset-top));
+    padding-bottom:max(clamp(10px,2vw,18px), env(safe-area-inset-bottom));
+  }
+
+  /* ───────── 見出し ───────── */
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  h1{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(18px,4.4vw,23px);
+    letter-spacing:.28em;
+    margin:0;
+    text-indent:.28em;
+    line-height:1;
+  }
+  .count{
+    font-family:var(--mono);
+    font-size:clamp(11px,2.6vw,13px);
+    letter-spacing:.1em;
+    color:var(--muted);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .count b{color:var(--ink);font-weight:400;font-size:1.25em}
+
+  /* ───────── 台 ───────── */
+  .stage{flex:1;min-height:0;display:grid;place-items:center;container-type:size}
+  .board{
+    position:relative;
+    touch-action:none;
+    width:min(100%, 360px);
+    aspect-ratio:1;
+    background:var(--paper-2);
+    border-radius:14px;
+  }
+  /* 台は残りの高さにも収める。これが無いと縦の狭い画面で判定欄に重なる */
+  @supports (width:1cqh){
+    .board{width:min(100%, 100cqh, 360px)}
+  }
+  .board svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;display:block}
+  .guide{stroke:rgba(35,40,42,.13);stroke-width:.6;stroke-dasharray:3 3;fill:none}
+
+  .piece{cursor:grab}
+  .piece path{
+    fill:none;
+    stroke:var(--ink);
+    stroke-width:5.5;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;
+  }
+  .piece.sel path{stroke:var(--flow-b)}
+  /* fill を書かないと SVG の既定値の黒で塗られる。rect には必ず書くこと */
+  .piece .hit{fill:rgba(0,0,0,0);stroke:none}
+  .piece .frame{fill:none;stroke:none}
+  .piece.sel .frame{
+    stroke:var(--flow-b);stroke-width:1;stroke-dasharray:3 2;opacity:.7;
+    vector-effect:non-scaling-stroke;
+  }
+  .piece .grip{fill:var(--paper);stroke:none;opacity:0}
+  .piece.sel .grip{
+    fill:var(--paper);stroke:var(--flow-b);stroke-width:1.2;opacity:1;
+    vector-effect:non-scaling-stroke;cursor:nwse-resize;
+  }
+  .answer path{
+    fill:none;
+    stroke:var(--accent);
+    stroke-width:5.5;
+    opacity:.32;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;
+  }
+  .answer.quiet path{stroke:var(--muted);opacity:.34}
+
+  /* ───────── 判定 ───────── */
+  /* 高さを固定する。行数で伸び縮みすると台の大きさが変わり、
+     指の下で部品が動いてしまう */
+  .verdict{
+    height:5.3em;flex:0 0 auto;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:.28em;text-align:center;
+  }
+  .verdict .big{
+    font-family:var(--display);
+    font-size:clamp(30px,9vw,42px);
+    line-height:1;
+    color:var(--flow-b);
+  }
+  .verdict .big.quiet{color:var(--muted)}
+  .verdict .msg{
+    font-size:clamp(12px,3.2vw,14px);
+    letter-spacing:.1em;
+    color:var(--muted);
+    line-height:1.5;
+  }
+  .verdict .sub{font-size:11px;letter-spacing:.16em;color:var(--muted)}
+  .verdict .yomi{font-size:11px;letter-spacing:.08em;color:var(--muted);font-family:var(--mono)}
+  @keyframes pop{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+  .pop{animation:pop .4s cubic-bezier(.3,1.3,.5,1) both}
+
+  /* ───────── 操作 ───────── */
+  .controls{display:flex;align-items:center;gap:10px}
+  .size{display:flex;align-items:center;gap:8px;flex:1;min-width:0;
+        font-size:10px;letter-spacing:.14em;color:var(--muted)}
+  input[type=range]{flex:1;min-width:0;accent-color:var(--flow-b)}
+  input[type=range]:disabled{opacity:.3}
+
+  button.text{
+    font-size:12px;letter-spacing:.06em;
+    background:transparent;border:1px solid var(--line);border-radius:999px;
+    padding:7px 13px;cursor:pointer;white-space:nowrap;
+    transition:background .15s ease,border-color .15s ease,color .15s ease,opacity .15s ease;
+  }
+  button.text:hover:not(:disabled){background:var(--paper-2);border-color:rgba(35,40,42,.45)}
+  button.text:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  button.text:disabled{opacity:.3;cursor:default}
+
+  /* ───────── 部品棚 ───────── */
+  .tabs{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line-2);padding-bottom:6px}
+  .tabs button{
+    font-size:12px;letter-spacing:.08em;color:var(--muted);
+    background:transparent;border:none;border-radius:8px;
+    padding:5px 9px;cursor:pointer;white-space:nowrap;
+    transition:color .15s ease,background .15s ease;
+  }
+  .tabs button:hover{background:var(--paper-2)}
+  .tabs button[aria-selected="true"]{color:var(--ink)}
+  .tabs button[aria-selected="true"] i{color:var(--flow-b)}
+  .tabs button i{font-style:normal;font-family:var(--mono);font-size:.86em;color:var(--muted)}
+  .tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .tabs .grow{flex:1}
+  .tabs input{
+    font-family:var(--body);font-size:12px;font-weight:300;color:var(--ink);
+    background:var(--paper-2);border:1px solid transparent;border-radius:999px;
+    padding:5px 11px;width:6.5em;min-width:0;
+    transition:width .2s ease,border-color .15s ease;
+  }
+  .tabs input:focus{outline:none;border-color:var(--flow-b);width:9em}
+  .tabs input::placeholder{color:var(--muted)}
+
+  .tray{
+    height:clamp(98px,21vh,168px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .grp{
+    font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--muted);
+    padding:7px 0 3px;position:sticky;top:0;background:var(--paper);
+  }
+  .row{display:flex;gap:6px;flex-wrap:wrap}
+  .cell{
+    width:46px;height:46px;padding:4px;flex:0 0 auto;
+    background:transparent;border:1px solid var(--line);border-radius:10px;cursor:pointer;
+    transition:background .15s ease,border-color .15s ease,transform .15s ease;
+  }
+  .cell:hover{background:var(--paper-2);border-color:rgba(35,40,42,.45)}
+  .cell:active{transform:scale(.94)}
+  .cell:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .cell svg{width:100%;height:100%;overflow:visible;display:block}
+  .cell path{
+    fill:none;stroke:var(--ink);stroke-width:6;
+    stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+  }
+  .cell.made{border-color:rgba(61,58,168,.4)}
+  .cell.made path{stroke:var(--flow-b)}
+  .cell.fresh{border-color:var(--accent)}
+  .cell.char{
+    font-family:var(--display);font-size:22px;line-height:38px;text-align:center;
+    color:var(--ink);padding:0;
+  }
+  .cell.char.rev{color:var(--muted)}
+  .cell.char[disabled]{cursor:default;background:transparent}
+  .cell.char[disabled]:hover{background:transparent;border-color:var(--line)}
+  .empty{font-size:11.5px;color:var(--muted);letter-spacing:.08em;padding:14px 2px;line-height:1.8}
+
+  footer{
+    font-size:9.5px;color:var(--muted);letter-spacing:.04em;line-height:1.7;
+    padding-top:2px;
+  }
+  footer a{color:inherit;text-underline-offset:2px}
+
+  .loading{
+    position:fixed;inset:0;display:grid;place-items:center;
+    background:var(--paper);z-index:9;font-size:12px;letter-spacing:.2em;color:var(--muted);
+  }
+
+  @media (max-height:680px){
+    .verdict{height:4.5em}
+    .verdict .big{font-size:clamp(26px,7.5vw,34px)}
+    .tray{height:clamp(88px,18vh,120px)}
+  }
+  @media (max-width:400px){
+    .cell{width:42px;height:42px}
+    button.text{padding:7px 10px;font-size:11.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="loading" id="loading">部品を用意しています</div>
+
+<div class="app">
+  <header>
+    <h1>くみたてる</h1>
+    <span class="count" id="count"><b>0</b> / 0</span>
+  </header>
+
+  <main class="stage">
+    <div class="board" id="board">
+      <svg viewBox="0 0 109 109" aria-label="組み立て台">
+        <line class="guide" x1="54.5" y1="4" x2="54.5" y2="105"/>
+        <line class="guide" x1="4" y1="54.5" x2="105" y2="54.5"/>
+        <g id="answer" class="answer"></g>
+        <g id="pieces"></g>
+      </svg>
+    </div>
+  </main>
+
+  <div class="verdict" id="verdict"></div>
+
+  <div class="controls">
+    <div class="size">
+      <span>大きさ</span>
+      <input type="range" id="scale" min="16" max="150" value="62" disabled aria-label="部品の大きさ">
+    </div>
+    <button class="text" id="reveal" disabled>答えを見る</button>
+    <button class="text" id="del" disabled>消す</button>
+    <button class="text" id="clear" disabled>全部</button>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="parts" aria-selected="true">部品 <i>0</i></button>
+    <button data-tab="made" aria-selected="false">つくった字 <i>0</i></button>
+    <button data-tab="coll" aria-selected="false">あつめた字 <i>0</i></button>
+    <span class="grow"></span>
+    <input id="find" type="search" placeholder="さがす" aria-label="部品や字をさがす">
+  </nav>
+
+  <div class="tray" id="tray"></div>
+
+  <footer>
+    字形データ <a href="http://kanjivg.tagaini.net" target="_blank" rel="noopener">KanjiVG</a>（CC BY-SA 3.0）。
+    このゲームも同じライセンスで公開しています。
+    <button class="text" id="wipe" style="padding:2px 9px;font-size:9.5px;margin-left:4px">最初から</button>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ───────── 調整できる数字（仕様書 4-3）─────────
+  const CFG = {
+    OK: 13,          // これより誤差が小さければ、その字と認める
+    WS: 0.15,        // 大きさのずれの重み。位置より軽く見る
+    NEAR: 2.2,       // OK*NEAR までは「おしい」
+    SETTLE: 1000,    // 手が止まってから判定するまで（ミリ秒）
+    START: 10,       // 最初に持っている素の部品の数
+    PER_FIND: 1,     // 1字つくるごとに増える素の部品の数
+    SCALE0: 0.62,    // 置いたときの大きさ
+  };
+
+  const SAVE_KEY = "kumitateru.v1";
+  const NS = "http://www.w3.org/2000/svg";
+  const $ = id => document.getElementById(id);
+  const board = $("board"), gPieces = $("pieces"), gAnswer = $("answer");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let PARTS = {}, KANJI = {}, BASE = [], INGRED = new Set(), STROKES = null;
+  let byKey = new Map();      // 部品の集合 → その集合になる字
+  let strokesOf = new Map();  // 部品 → 画数
+
+  let placed = [];            // 台の上の部品 {id, el, x, y, s, w, h, node}
+  let sel = null, drag = null, uid = 0;
+  let found = new Set();      // 自分で組み上げた字
+  let revealed = new Set();   // 答えを見て通した字
+  let tab = "parts", query = "";
+  let lastMade = null;        // 直前に作った字（棚で目立たせる）
+
+  // ───────── 保存 ─────────
+  function save() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        v: 1, found: [...found], revealed: [...revealed],
+      }));
+    } catch (e) { /* 書けなくても遊べる */ }
+  }
+  function restore() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d && d.v === 1) {
+        (d.found || []).forEach(c => { if (KANJI[c]) found.add(c); });
+        (d.revealed || []).forEach(c => { if (KANJI[c]) revealed.add(c); });
+      }
+    } catch (e) { /* 壊れていたら無視する */ }
+  }
+
+  // ───────── 持ちもの ─────────
+  const unlocked = () => Math.min(BASE.length, CFG.START + found.size * CFG.PER_FIND);
+  const shelf = () => BASE.slice(0, unlocked());
+  const made = () => [...found].filter(c => INGRED.has(c));
+  const coll = () => [...found].filter(c => !INGRED.has(c));
+
+  // ───────── 図形 ─────────
+  function shapeGroup(el) {
+    const p = PARTS[el];
+    const g = document.createElementNS(NS, "g");
+    if (!p) return g;
+    const [x0, y0, x1, y1] = p.box;
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    const inner = document.createElementNS(NS, "g");
+    inner.setAttribute("transform", `translate(${-cx},${-cy})`);
+    for (const d of p.d) {
+      const path = document.createElementNS(NS, "path");
+      path.setAttribute("d", d);
+      inner.appendChild(path);
+    }
+    g.appendChild(inner);
+    g.dataset.w = x1 - x0;
+    g.dataset.h = y1 - y0;
+    return g;
+  }
+
+  const SPOTS = [[36, 54.5], [73, 54.5], [54.5, 27], [54.5, 82],
+                 [29, 29], [80, 29], [29, 80], [80, 80], [54.5, 54.5]];
+
+  function place(el, x, y, s) {
+    if (!PARTS[el]) return null;
+    const g = shapeGroup(el);
+    g.setAttribute("class", "piece");
+    const w = +g.dataset.w, h = +g.dataset.h;
+
+    // 線だけだと細くて掴めないので、透明な矩形を下に敷く
+    const hit = document.createElementNS(NS, "rect");
+    hit.setAttribute("class", "hit");
+    hit.setAttribute("x", -w / 2 - 4); hit.setAttribute("y", -h / 2 - 4);
+    hit.setAttribute("width", w + 8); hit.setAttribute("height", h + 8);
+    g.insertBefore(hit, g.firstChild);
+
+    const frame = document.createElementNS(NS, "rect");
+    frame.setAttribute("class", "frame");
+    frame.setAttribute("x", -w / 2 - 2); frame.setAttribute("y", -h / 2 - 2);
+    frame.setAttribute("width", w + 4); frame.setAttribute("height", h + 4);
+    g.appendChild(frame);
+
+    // 右下の角。つまんで大きさを変える
+    const grip = document.createElementNS(NS, "circle");
+    grip.setAttribute("class", "grip");
+    grip.setAttribute("cx", w / 2 + 2); grip.setAttribute("cy", h / 2 + 2);
+    grip.setAttribute("r", 4.2);
+    g.appendChild(grip);
+
+    const it = { id: ++uid, el, x, y, s, w, h, node: g, hit, frame, grip };
+    placed.push(it);
+    gPieces.appendChild(g);
+    draw(it);
+    select(it);
+    scheduleJudge();
+    return it;
+  }
+
+  function draw(it) {
+    it.node.setAttribute("transform", `translate(${it.x},${it.y}) scale(${it.s})`);
+    // 当たり判定と角のハンドルは、部品を小さくしても掴める大きさを保つ。
+    // scale() が掛かるぶんを打ち消しておかないと、小さい部品が触れなくなる
+    const k = 1 / it.s;
+    const pad = Math.min(4 * k, 12);
+    it.hit.setAttribute("x", -it.w / 2 - pad);
+    it.hit.setAttribute("y", -it.h / 2 - pad);
+    it.hit.setAttribute("width", it.w + pad * 2);
+    it.hit.setAttribute("height", it.h + pad * 2);
+    const m = Math.min(2 * k, 6);
+    it.frame.setAttribute("x", -it.w / 2 - m);
+    it.frame.setAttribute("y", -it.h / 2 - m);
+    it.frame.setAttribute("width", it.w + m * 2);
+    it.frame.setAttribute("height", it.h + m * 2);
+    it.grip.setAttribute("r", Math.min(4.2 * k, 13));
+    it.grip.setAttribute("cx", it.w / 2 + m);
+    it.grip.setAttribute("cy", it.h / 2 + m);
+  }
+
+  function select(it) {
+    sel = it;
+    for (const n of gPieces.children) n.classList.remove("sel");
+    if (it) {
+      it.node.classList.add("sel");
+      gPieces.appendChild(it.node);              // 前面へ
+      $("scale").disabled = false;
+      $("scale").value = Math.round(it.s * 100);
+    } else {
+      $("scale").disabled = true;
+    }
+    $("del").disabled = !it;
+  }
+
+  function removeAll() {
+    for (const p of placed) p.node.remove();
+    placed = []; select(null); scheduleJudge();
+  }
+
+  // ───────── 判定 ─────────
+  let settleTimer = null;
+
+  function scheduleJudge() {
+    clearTimeout(settleTimer);
+    clearAnswer();
+    $("clear").disabled = !placed.length;
+    $("reveal").disabled = true;
+    if (placed.length < 2) {
+      msg(placed.length ? "もうひとつ置いてください" : "下の棚から部品を置いてください");
+      return;
+    }
+    msg("……");
+    settleTimer = setTimeout(judge, CFG.SETTLE);
+  }
+
+  function clearAnswer() {
+    gAnswer.textContent = "";
+    gAnswer.classList.remove("quiet");
+  }
+
+  function candidates() {
+    return byKey.get(placed.map(p => p.el).sort().join(" ")) || [];
+  }
+
+  function judge() {
+    const cands = candidates();
+    if (!cands.length) { msg("この組み合わせでは字にならない"); return; }
+
+    let best = null, bestErr = Infinity;
+    for (const k of cands) {
+      const e = layoutError(k, placed);
+      if (e < bestErr) { bestErr = e; best = k; }
+    }
+    if (bestErr <= CFG.OK) {
+      accept(best, false, cands.length > 1 ? "置き方で決まりました" : "");
+    } else {
+      $("reveal").disabled = false;
+      msg(bestErr <= CFG.OK * CFG.NEAR
+        ? "おしい。置き方を整えてください"
+        : "部品はそろっています。置き方が違います");
+    }
+  }
+
+  // 正解の配置と、いま置いてある配置のずれ。位置を重く、大きさを軽く見る
+  function layoutError(k, arr) {
+    const t = KANJI[k];
+    const ref = t.parts.map((el, i) => {
+      const b = t.layout[i];
+      return { el, x: (b[0] + b[2]) / 2, y: (b[1] + b[3]) / 2, w: b[2] - b[0], h: b[3] - b[1] };
+    });
+    const used = new Array(arr.length).fill(false);
+    let total = 0;
+    for (const r of ref) {
+      let bi = -1, bd = Infinity;
+      arr.forEach((m, i) => {
+        if (used[i] || m.el !== r.el) return;
+        const d = Math.hypot(m.x - r.x, m.y - r.y)
+                + CFG.WS * (Math.abs(m.w * m.s - r.w) + Math.abs(m.h * m.s - r.h));
+        if (d < bd) { bd = d; bi = i; }
+      });
+      if (bi < 0) return Infinity;
+      used[bi] = true; total += bd;
+    }
+    return total / ref.length;
+  }
+
+  // ───────── 表示 ─────────
+  function msg(text) {
+    $("verdict").innerHTML = `<span class="msg">${esc(text)}</span>`;
+  }
+  const esc = s => String(s).replace(/[&<>"]/g, c => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function accept(kanji, byReveal, note) {
+    const isNew = !found.has(kanji);
+    const before = unlocked();
+    found.add(kanji);
+    if (byReveal) revealed.add(kanji);
+    if (isNew) { lastMade = kanji; save(); }
+
+    const t = KANJI[kanji];
+    const quiet = byReveal ? " quiet" : "";
+    const sub = byReveal ? "答えを見た" : (isNew ? "はじめてつくった" : (note || ""));
+    const gained = unlocked() - before;
+    const extra = gained > 0
+      ? `<span class="sub">あたらしい部品　${esc(BASE.slice(before, before + gained).join(" "))}</span>` : "";
+
+    const line = [t.yomi, sub].filter(Boolean).join("　");
+    $("verdict").innerHTML =
+      `<span class="big${quiet}${reduce || byReveal ? "" : " pop"}">${esc(kanji)}</span>` +
+      (line ? `<span class="yomi">${esc(line)}</span>` : "") + extra;
+
+    // 本物の字を薄く重ねる。ここが報酬
+    if (STROKES && STROKES[kanji]) {
+      gAnswer.classList.toggle("quiet", byReveal);
+      for (const d of STROKES[kanji]) {
+        const p = document.createElementNS(NS, "path");
+        p.setAttribute("d", d);
+        gAnswer.appendChild(p);
+      }
+    }
+    updateCount();
+    renderTray();
+  }
+
+  function updateCount() {
+    const total = Object.keys(KANJI).length - Object.values(KANJI)
+      .filter(v => v.parts.length < 2).length;
+    $("count").innerHTML = `<b>${found.size}</b> / ${total}`;
+    $("tabs").querySelector('[data-tab="parts"] i').textContent = shelf().length;
+    $("tabs").querySelector('[data-tab="made"] i').textContent = made().length;
+    $("tabs").querySelector('[data-tab="coll"] i').textContent = coll().length;
+  }
+
+  // ───────── 答えを見る（仕様書 11-5）─────────
+  function reveal() {
+    const cands = candidates();
+    if (!cands.length) return;
+    let best = null, bestErr = Infinity;
+    for (const k of cands) {
+      const e = layoutError(k, placed);
+      if (e < bestErr) { bestErr = e; best = k; }
+    }
+    clearTimeout(settleTimer);
+    $("reveal").disabled = true;
+
+    // 正解の配置を、いまの置き方に近いほうから割り当てる
+    const t = KANJI[best];
+    const goals = new Array(placed.length).fill(null);
+    const taken = new Array(placed.length).fill(false);
+    t.parts.forEach((el, i) => {
+      const b = t.layout[i];
+      const g = {
+        x: (b[0] + b[2]) / 2, y: (b[1] + b[3]) / 2,
+        s: ((b[2] - b[0]) / (PARTS[el].box[2] - PARTS[el].box[0] || 1)
+           + (b[3] - b[1]) / (PARTS[el].box[3] - PARTS[el].box[1] || 1)) / 2,
+      };
+      let bi = -1, bd = Infinity;
+      placed.forEach((m, j) => {
+        if (taken[j] || m.el !== el) return;
+        const d = Math.hypot(m.x - g.x, m.y - g.y);
+        if (d < bd) { bd = d; bi = j; }
+      });
+      if (bi >= 0) { taken[bi] = true; goals[bi] = g; }
+    });
+
+    const from = placed.map(p => ({ x: p.x, y: p.y, s: p.s }));
+    const T = reduce ? 0 : 620;
+
+    let ended = false;
+    function finish() {
+      if (ended) return;
+      ended = true;
+      placed.forEach((p, i) => {
+        const g = goals[i]; if (!g) return;
+        p.x = g.x; p.y = g.y; p.s = g.s; draw(p);
+      });
+      if (sel) $("scale").value = Math.round(sel.s * 100);
+      accept(best, true, "");
+    }
+    if (!T) { finish(); return; }
+
+    const t0 = performance.now();
+    (function step(now) {
+      if (ended) return;
+      const u = Math.min(1, (now - t0) / T);
+      const e = 1 - Math.pow(1 - u, 3);           // 終わりでゆっくり止まる
+      placed.forEach((p, i) => {
+        const g = goals[i]; if (!g) return;
+        p.x = from[i].x + (g.x - from[i].x) * e;
+        p.y = from[i].y + (g.y - from[i].y) * e;
+        p.s = from[i].s + (g.s - from[i].s) * e;
+        draw(p);
+      });
+      if (u < 1) requestAnimationFrame(step); else finish();
+    })(performance.now());
+    // 画面が隠れていると rAF は来ない。演出が流れなくても字は必ず記録する
+    setTimeout(finish, T + 240);
+  }
+
+  // ───────── 台の操作 ─────────
+  function toLocal(e) {
+    const r = board.getBoundingClientRect();
+    return { x: (e.clientX - r.left) / r.width * 109, y: (e.clientY - r.top) / r.height * 109 };
+  }
+
+  // つかむ部品を決める。部品の枠は重なり合うので、
+  // 線そのものに触れていればその部品、余白で触れたなら中心が近いほうを選ぶ
+  function pick(e, l) {
+    const g = e.target.closest(".piece");
+    const on = g && placed.find(p => p.node === g);
+    if (on && (e.target.tagName === "path" || e.target.classList.contains("grip"))) return on;
+    let best = null, bd = Infinity;
+    for (const p of placed) {
+      const pad = Math.min(4, 12 * p.s);   // draw() が敷く余白と揃えること
+      const hw = p.w * p.s / 2 + pad, hh = p.h * p.s / 2 + pad;
+      if (Math.abs(l.x - p.x) > hw || Math.abs(l.y - p.y) > hh) continue;
+      const d = Math.hypot((l.x - p.x) / hw, (l.y - p.y) / hh);
+      if (d < bd) { bd = d; best = p; }
+    }
+    return best || on || null;
+  }
+
+  board.addEventListener("pointerdown", e => {
+    const l = toLocal(e);
+    const it = pick(e, l);
+    if (!it) { select(null); return; }
+    select(it);
+    if (e.target.classList.contains("grip")) {
+      // 角をつまんだ → 大きさを変える
+      const d0 = Math.hypot(l.x - it.x, l.y - it.y) || 1;
+      drag = { it, mode: "size", d0, s0: it.s };
+    } else {
+      // つかんだ位置と中心のずれを覚えておく（覚えないと指の位置へ飛ぶ）
+      drag = { it, mode: "move", dx: it.x - l.x, dy: it.y - l.y };
+    }
+    // 枠の外に指が出ても追従させる。掴めない環境でも動きは続くので握りつぶす
+    try { board.setPointerCapture(e.pointerId); } catch (err) {}
+    e.preventDefault();
+  });
+
+  board.addEventListener("pointermove", e => {
+    if (!drag) return;
+    clearTimeout(settleTimer);              // 動かしている間は判定しない
+    const l = toLocal(e), it = drag.it;
+    if (drag.mode === "size") {
+      const d = Math.hypot(l.x - it.x, l.y - it.y);
+      it.s = Math.max(0.16, Math.min(1.5, drag.s0 * d / drag.d0));
+      $("scale").value = Math.round(it.s * 100);
+    } else {
+      it.x = Math.max(3, Math.min(106, l.x + drag.dx));
+      it.y = Math.max(3, Math.min(106, l.y + drag.dy));
+    }
+    draw(it);
+  });
+
+  const endDrag = () => { if (drag) { drag = null; scheduleJudge(); } };
+  board.addEventListener("pointerup", endDrag);
+  board.addEventListener("pointercancel", endDrag);
+
+  $("scale").addEventListener("input", e => {
+    if (!sel) return;
+    sel.s = +e.target.value / 100;
+    draw(sel);
+    scheduleJudge();
+  });
+  $("del").addEventListener("click", () => {
+    if (!sel) return;
+    sel.node.remove();
+    placed = placed.filter(p => p !== sel);
+    select(null); scheduleJudge();
+  });
+  $("clear").addEventListener("click", removeAll);
+  $("reveal").addEventListener("click", reveal);
+  $("wipe").addEventListener("click", () => {
+    if (!found.size) return;
+    if (!confirm(`つくった ${found.size} 字をすべて消します。よろしいですか。`)) return;
+    found.clear(); revealed.clear(); lastMade = null;
+    try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+    removeAll(); updateCount(); renderTray();
+  });
+
+  // ───────── 部品棚 ─────────
+  $("tabs").addEventListener("click", e => {
+    const b = e.target.closest("button[data-tab]");
+    if (!b) return;
+    tab = b.dataset.tab;
+    for (const x of $("tabs").querySelectorAll("button[data-tab]"))
+      x.setAttribute("aria-selected", String(x === b));
+    renderTray();
+    $("tray").scrollTop = 0;
+  });
+  $("find").addEventListener("input", e => { query = e.target.value.trim(); renderTray(); });
+
+  function cellFor(el, cls) {
+    const b = document.createElement("button");
+    b.className = "cell" + (cls ? " " + cls : "");
+    b.title = el;
+    b.setAttribute("aria-label", el);
+    if (PARTS[el]) {
+      const svg = document.createElementNS(NS, "svg");
+      svg.setAttribute("viewBox", "-56 -56 112 112");
+      svg.appendChild(shapeGroup(el));
+      b.appendChild(svg);
+    } else {
+      b.classList.add("char");
+      b.textContent = el;
+    }
+    b.addEventListener("click", () => {
+      const n = placed.length;
+      const [x, y] = SPOTS[n % SPOTS.length];
+      const j = n >= SPOTS.length ? (Math.random() * 12 - 6) : 0;
+      place(el, x + j, y + j, CFG.SCALE0);
+    });
+    return b;
+  }
+
+  function matches(el) {
+    if (!query) return true;
+    if (el.includes(query)) return true;
+    const k = KANJI[el];
+    return !!(k && k.yomi && k.yomi.includes(query));
+  }
+
+  function renderTray() {
+    const tray = $("tray");
+    tray.textContent = "";
+    updateCountLabels();
+
+    if (tab === "parts") {
+      const list = shelf().filter(matches);
+      if (!list.length) return blank(tray, query ? "見つかりません" : "");
+      // 画数の少ない順に並べる（漢字辞典と同じ順序）
+      const byStroke = new Map();
+      for (const el of list) {
+        const n = strokesOf.get(el) || 0;
+        if (!byStroke.has(n)) byStroke.set(n, []);
+        byStroke.get(n).push(el);
+      }
+      for (const n of [...byStroke.keys()].sort((a, b) => a - b)) {
+        const h = document.createElement("div");
+        h.className = "grp"; h.textContent = n ? n + "画" : "—";
+        tray.appendChild(h);
+        const row = document.createElement("div");
+        row.className = "row";
+        for (const el of byStroke.get(n)) row.appendChild(cellFor(el, "part"));
+        tray.appendChild(row);
+      }
+    } else if (tab === "made") {
+      const list = made().filter(matches).sort(orderKanji);
+      if (!list.length) return blank(tray,
+        query ? "見つかりません"
+              : "組み上げた字のうち、ほかの字の材料になるものがここに並びます。");
+      const row = document.createElement("div");
+      row.className = "row";
+      for (const c of list) row.appendChild(cellFor(c, "made" + (c === lastMade ? " fresh" : "")));
+      tray.appendChild(row);
+    } else {
+      const list = coll().filter(matches).sort(orderKanji);
+      if (!list.length) return blank(tray,
+        query ? "見つかりません"
+              : "ほかの字の材料にはならない字が、ここにたまっていきます。");
+      const row = document.createElement("div");
+      row.className = "row";
+      for (const c of list) {
+        const b = document.createElement("button");
+        b.className = "cell char" + (revealed.has(c) ? " rev" : "");
+        b.textContent = c; b.disabled = true;
+        b.title = c + (KANJI[c].yomi ? "　" + KANJI[c].yomi : "");
+        row.appendChild(b);
+      }
+      tray.appendChild(row);
+    }
+  }
+
+  const orderKanji = (a, b) => (KANJI[a].parts.length - KANJI[b].parts.length)
+                            || a.localeCompare(b, "ja");
+
+  function blank(tray, text) {
+    const d = document.createElement("div");
+    d.className = "empty"; d.textContent = text;
+    tray.appendChild(d);
+  }
+  function updateCountLabels() {
+    $("tabs").querySelector('[data-tab="parts"] i').textContent = shelf().length;
+    $("tabs").querySelector('[data-tab="made"] i').textContent = made().length;
+    $("tabs").querySelector('[data-tab="coll"] i').textContent = coll().length;
+  }
+
+  // ───────── 起動 ─────────
+  async function boot() {
+    const res = await fetch("data/kumitateru.json");
+    if (!res.ok) throw new Error("データが読めません (" + res.status + ")");
+    const D = await res.json();
+    PARTS = D.parts; KANJI = D.kanji; BASE = D.base;
+    INGRED = new Set(D.ingredients);
+
+    for (const [el, p] of Object.entries(PARTS)) strokesOf.set(el, p.strokes);
+    for (const [ch, v] of Object.entries(KANJI)) {
+      if (v.parts.length < 2) continue;      // 1部品の字は組み立てられない
+      const k = [...v.parts].sort().join(" ");
+      if (!byKey.has(k)) byKey.set(k, []);
+      byKey.get(k).push(ch);
+    }
+
+    restore();
+    updateCount();
+    renderTray();
+    scheduleJudge();
+    $("loading").remove();
+
+    // 正解の重ね表示に使うパスは大きいので、遊べる状態にしてから読む
+    fetch("data/strokes.json")
+      .then(r => r.ok ? r.json() : null)
+      .then(s => { STROKES = s; })
+      .catch(() => {});
+  }
+
+  boot().catch(err => {
+    $("loading").textContent = err.message;
+  });
+})();
+</script>
+</body>
+</html>

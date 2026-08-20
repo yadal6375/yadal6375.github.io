@@ -20,7 +20,7 @@
 
 ## 遊ぶ
 
-https://candy9512.github.io/musubu/
+https://yadal6375.github.io/musubu/
 
 ## ライセンス
 

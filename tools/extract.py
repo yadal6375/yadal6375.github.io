@@ -213,35 +213,90 @@ def elem_kids(node):
     return out
 
 
+# 浮いた画のうち、横・縦・払い・点は棚にある 一 丨 丿 丶 と同じものとして扱う。
+# それ以外は筆画の名前（㇏ ㇕ ㇉ …）をそのまま部品名にする
+STROKE_ALIAS = {"㇐": "一", "㇑": "丨", "㇒": "丿", "㇔": "丶"}
+
+# 1つの部品につき、浮いた画を何本まで拾うか。
+# 0 なら観や楽が作れない。6 以上だと鬱が13部品の筆画の山になる
+MAX_ORPHANS = 3
+
+
+def orphan_name(p):
+    """浮いた画の名前。添え字つきの変種（㇑a など）は別物として扱う。
+    まっすぐな 丨 と、五の2画目のような斜めに払う縦画は形が違いすぎて、
+    同じ部品にすると均等拡縮では重ならない"""
+    t = (p.get("kvg_type") or "").split("/")[0].strip()
+    return STROKE_ALIAS.get(t, t or "㇐")
+
+
+def paths_of_all(nodes):
+    return [d for n in nodes for d in paths_of(n)]
+
+
 def split(node):
-    """node を部品に割る。割れないなら None。
-    どの部品にも属さない画が出る割り方は採らない（画が消えるので）"""
+    """node を部品に割る。[(名前, [ノード])] を返す。割れないなら None。
+
+    2つのことをしている。
+
+    1. KanjiVG には、どの部品グループにも属さない画がしばしば混ざっている。
+       これを捨てると字が欠けるが、混ざっていることを理由に分解を諦めると、
+       観（横画1本が浮いている）のような日常的な字がまるごと作れなくなる。
+       そこで浮いた画は、その画自体を1つの部品として数える。
+
+    2. 離れた位置に分かれて書かれる部品には kvg:part が振ってある。
+       五の 二 は1画目と4画目に分かれていて、まとめないと
+       「一本の横画」が 二 という名前の部品になってしまう"""
     kids = elem_kids(node)
     if len(kids) < 2:
         return None
-    if sum(len(paths_of(k)) for k in kids) != len(paths_of(node)):
+    covered = {id(p) for k in kids for p in k.iter(SVG + "path")}
+    orphans = [p for p in node.iter(SVG + "path") if id(p) not in covered]
+    # 浮いた画が多いのは「1本はみ出した」ではなく
+    # KanjiVG がそこを分析していないということ。割ると筆画の寄せ集めになる。
+    # 鬯 は10画中6画が浮いていて、割ると鬱が13部品になってしまう
+    if len(orphans) > MAX_ORPHANS:
         return None
-    return kids
+
+    out, merging = [], {}
+    for k in kids:
+        el = k.get("kvg_element")
+        if k.get("kvg_part") and el in merging:
+            merging[el].append(k)
+            continue
+        group = [k]
+        if k.get("kvg_part"):
+            merging[el] = group
+        out.append((el, group))
+    out += [(orphan_name(p), [p]) for p in orphans]
+    if len(out) < 2:
+        return None
+
+    # 書き順どおりに並べ直す
+    pos = {id(p): i for i, p in enumerate(node.iter(SVG + "path"))}
+    out.sort(key=lambda t: min(pos[id(p)] for n in t[1] for p in n.iter(SVG + "path")))
+    return out
 
 
-def decompose(node, name, min_strokes, max_depth, stop_at=frozenset(), depth=0):
-    """[(部品名, ノード)] を返す。これ以上割らない条件は下の4つ。
+def decompose(nodes, name, min_strokes, max_depth, stop_at=frozenset(), depth=0):
+    """[(部品名, [ノード])] を返す。これ以上割らない条件は下の5つ。
 
     stop_at（常用漢字）に当たったらそこで止めるのが肝。
     最後まで割ると 森＝木木木 になってしまい、
     「組み上げた字が次の部品になる」という遊びの背骨が消える。
     ここで止めれば 森＝木＋林 になり、林を作らないと森が作れなくなる"""
     if depth > 0 and name in stop_at:
-        return [(name, node)]
-    if len(paths_of(node)) <= min_strokes or depth >= max_depth:
-        return [(name, node)]
-    kids = split(node)
+        return [(name, nodes)]
+    if len(paths_of_all(nodes)) <= min_strokes or depth >= max_depth:
+        return [(name, nodes)]
+    if len(nodes) != 1:
+        return [(name, nodes)]        # kvg:part で離れている部品は割らない
+    kids = split(nodes[0])
     if not kids:
-        return [(name, node)]
+        return [(name, nodes)]
     out = []
-    for k in kids:
-        out += decompose(k, k.get("kvg_element"), min_strokes, max_depth,
-                         stop_at, depth + 1)
+    for n, ks in kids:
+        out += decompose(ks, n, min_strokes, max_depth, stop_at, depth + 1)
     return out
 
 
@@ -302,18 +357,18 @@ def build(min_strokes, max_depth=8):
         if node is None:
             failures.append(ch)
             continue
-        leaves = decompose(node, ch, min_strokes, max_depth, joyo)
+        leaves = decompose([node], ch, min_strokes, max_depth, joyo)
         parts, layout, pos = [], [], []
         broken = False
-        for name, nd in leaves:
-            ds = paths_of(nd)
+        for name, nds in leaves:
+            ds = paths_of_all(nds)
             b = bbox(ds)
             if b is None:
                 broken = True
                 break
             parts.append(name)
             layout.append(b)
-            pos.append(nd.get("kvg_position") or "")
+            pos.append(nds[0].get("kvg_position") or "")
             area = (b[2] - b[0]) * (b[3] - b[1])
             occ[name].append((area, ds, b))
         if broken:

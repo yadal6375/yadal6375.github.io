@@ -2,8 +2,8 @@
 
 ちいさなブラウザゲームの置き場。
 
-- **[むすぶ](https://yadal6375.github.io/asobiba/musubu/)** — 図形を回して線の端をすべてつなぐパズル
-- **[くみたてる](https://yadal6375.github.io/asobiba/kumitateru/)** — 部品を並べて漢字を組み立てるパズル
+- **[むすぶ](https://yadal6375.github.io/musubu/)** — 図形を回して線の端をすべてつなぐパズル
+- **[くみたてる](https://yadal6375.github.io/kumitateru/)** — 部品を並べて漢字を組み立てるパズル
 
 ## くみたてる
 

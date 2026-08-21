@@ -67,6 +67,32 @@
   }
 
   /* ---- header ---- */
+  .back{
+    display:flex;
+    width:max-content;
+    max-width:100%;
+    align-items:baseline;
+    gap:.55em;
+    margin:0 0 .9em;
+    padding:2px 0;
+    font-size:clamp(10px,2.4vw,12px);
+    letter-spacing:.2em;
+    line-height:1;
+    color:var(--muted);
+    text-decoration:none;
+    transition:color .18s ease;
+  }
+  .back::before{
+    content:"\2190";
+    display:inline-block;
+    font-size:1.2em;
+    letter-spacing:0;
+    transition:transform .18s ease;
+  }
+  .back:hover{color:var(--accent)}
+  .back:hover::before{transform:translateX(-3px)}
+  .back:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
   header{
     display:flex;
     align-items:flex-start;
@@ -183,12 +209,16 @@
     h1{letter-spacing:.24em;text-indent:.24em}
     button{padding:9px 15px;font-size:12px}
   }
+  @media (prefers-reduced-motion: reduce){
+    .back,.back::before{transition:none}
+  }
 </style>
 </head>
 <body>
 <div class="app">
   <header>
     <div>
+      <a class="back" href="../" aria-label="あそびばへ戻る">あそびば</a>
       <h1>むすぶ</h1>
       <p class="tagline">図形をタップして回し、線の端をすべてつなぐ。</p>
     </div>

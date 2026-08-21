@@ -71,7 +71,30 @@
   }
 
   /* ───────── 見出し ───────── */
-  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  header{display:flex;align-items:baseline;justify-content:flex-start;gap:12px}
+  .back{
+    flex:0 0 auto;
+    display:flex;
+    align-items:baseline;
+    gap:.55em;
+    padding:2px 0;
+    font-size:clamp(10px,2.4vw,12px);
+    letter-spacing:.2em;
+    line-height:1;
+    color:var(--muted);
+    text-decoration:none;
+    transition:color .18s ease;
+  }
+  .back::before{
+    content:"\2190";
+    display:inline-block;
+    font-size:1.2em;
+    letter-spacing:0;
+    transition:transform .18s ease;
+  }
+  .back:hover{color:var(--accent)}
+  .back:hover::before{transform:translateX(-3px)}
+  .back:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
   h1{
     font-family:var(--display);
     font-weight:600;
@@ -88,6 +111,7 @@
     color:var(--muted);
     font-variant-numeric:tabular-nums;
     white-space:nowrap;
+    margin-left:auto;
   }
   .count b{color:var(--ink);font-weight:400;font-size:1.25em}
 
@@ -260,6 +284,7 @@
     .tray{height:clamp(88px,18vh,120px)}
   }
   @media (max-width:400px){
+    .back{letter-spacing:.1em;gap:.4em}
     .cell{width:42px;height:42px}
     button.text{padding:7px 10px;font-size:11.5px}
   }
@@ -274,6 +299,7 @@
 
 <div class="app">
   <header>
+    <a class="back" href="../" aria-label="あそびばへ戻る">あそびば</a>
     <h1>くみたてる</h1>
     <span class="count" id="count"><b>0</b> / 0</span>
   </header>

@@ -186,6 +186,15 @@
   .work:hover .mark.build .lift,
   .work:focus-visible .mark.build .lift{transform:translateY(-2.6px)}
 
+  /* たぐるの印：触れると、たどり着いた輪がめぐる */
+  .mark.pull .loop{
+    transform-box:fill-box;
+    transform-origin:center;
+    transition:transform .6s cubic-bezier(.34,1.3,.5,1);
+  }
+  .work:hover .mark.pull .loop,
+  .work:focus-visible .mark.pull .loop{transform:rotate(120deg)}
+
   /* ---------- つくりかけ ---------- */
   .soon{position:relative;color:var(--muted)}
   .soon .knot{border-style:dashed;border-color:var(--muted)}
@@ -206,7 +215,7 @@
 
   @media (prefers-reduced-motion: reduce){
     .spine::before{animation:none}
-    .mark .elbow,.knot{transition:none}
+    .mark .elbow,.mark .loop,.knot{transition:none}
     html{scroll-behavior:auto}
   }
 </style>
@@ -254,6 +263,20 @@
       </h2>
       <p>部品を台に並べて漢字をつくるパズル。木と木で林、林と木で森。組み上げた字が、次の部品になります。</p>
       <span class="tags"><span>組み立て</span><span>実際の字形</span><span>常用漢字2136字</span></span>
+    </a>
+
+    <a class="work" href="./taguru/">
+      <span class="knot" aria-hidden="true"></span>
+      <span class="date">2026.11</span>
+      <h2>
+        たぐる
+        <svg class="mark pull" viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M9 3 C21 6 7 11 16 14.5" fill="none" stroke="#16A0A6" stroke-width="3.6" stroke-linecap="round"/>
+          <circle class="loop" cx="16" cy="22" r="7" fill="none" stroke="#B33B86" stroke-width="3.6" stroke-dasharray="7.5 3.5"/>
+        </svg>
+      </h2>
+      <p>好きなことばから、Wikipedia の本文の最初のリンクをたどりつづける。どこから始めても、同じところへ着くのだろうか。</p>
+      <span class="tags"><span>Wikipedia</span><span>実データ</span><span>結果を共有</span></span>
     </a>
 
     <div class="soon">

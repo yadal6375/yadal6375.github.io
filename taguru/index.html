@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>たぐる — 最初のリンクをたどりつづける</title>
+
+<meta property="og:url" content="https://yadal6375.github.io/taguru/">
+<meta property="og:image" content="https://yadal6375.github.io/taguru/og.png">
+<meta name="twitter:image" content="https://yadal6375.github.io/taguru/og.png">
+
+<meta name="description" content="Wikipedia の記事で、本文の最初のリンクをたどりつづける。どこから始めても、同じところへ着くのだろうか。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="たぐる">
+<meta property="og:title" content="たぐる — 最初のリンクをたどりつづける">
+<meta property="og:description" content="Wikipedia の本文の最初のリンクをたどりつづける。どこから始めても、同じところへ着くのだろうか。">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="たぐる — 最初のリンクをたどりつづける">
+<meta name="twitter:description" content="Wikipedia の本文の最初のリンクをたどりつづける。どこから始めても、同じところへ着くのだろうか。">
+<meta name="twitter:image:alt" content="一本の線が節をつなぎながら下りていき、最後に輪になる図">
+<meta name="theme-color" content="#E7E8E2">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%277%27%20fill%3D%27%23E7E8E2%27%2F%3E%3Cpath%20d%3D%27M9%204%20C21%207%207%2012%2016.5%2015.6%27%20fill%3D%27none%27%20stroke%3D%27%2316A0A6%27%20stroke-width%3D%272.8%27%20stroke-linecap%3D%27round%27%2F%3E%3Ccircle%20cx%3D%2717%27%20cy%3D%2721.6%27%20r%3D%276%27%20fill%3D%27none%27%20stroke%3D%27%233D3AA8%27%20stroke-width%3D%272.8%27%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://ja.wikipedia.org" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper:#E7E8E2;
+    --paper-2:#DEE0D8;
+    --ink:#23282A;
+    --muted:#8E948F;
+    --flow-a:#16A0A6;
+    --flow-b:#3D3AA8;
+    --accent:#B33B86;
+
+    --display:"Zen Old Mincho", ui-serif, "Hiragino Mincho ProN", serif;
+    --body:"Zen Kaku Gothic New", ui-sans-serif, "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
+    --mono:"DM Mono", ui-monospace, "SFMono-Regular", monospace;
+
+    --line:rgba(35,40,42,.22);
+    --line-2:rgba(35,40,42,.12);
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    font-weight:300;
+    -webkit-font-smoothing:antialiased;
+    line-height:1.8;
+  }
+  a{color:inherit;text-underline-offset:3px}
+  button{font-family:inherit;color:inherit}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  .page{
+    max-width:640px;
+    margin:0 auto;
+    padding:max(clamp(20px,5vh,48px), env(safe-area-inset-top)) clamp(16px,5vw,40px) max(48px, env(safe-area-inset-bottom));
+  }
+
+  /* ───────── 見出し ───────── */
+  .back{
+    display:inline-flex;
+    align-items:baseline;
+    gap:.55em;
+    padding:2px 0;
+    font-size:12px;
+    letter-spacing:.2em;
+    line-height:1;
+    color:var(--muted);
+    text-decoration:none;
+    transition:color .18s ease;
+  }
+  .back::before{
+    content:"\2190";
+    display:inline-block;
+    font-size:1.2em;
+    letter-spacing:0;
+    transition:transform .18s ease;
+  }
+  .back:hover{color:var(--accent)}
+  .back:hover::before{transform:translateX(-3px)}
+  .back:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+  header{margin:clamp(28px,6vh,56px) 0 clamp(24px,4vh,36px)}
+  h1{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(30px,7.4vw,42px);
+    letter-spacing:.3em;
+    margin:0;
+    line-height:1.25;
+  }
+  .lede{
+    margin:.9em 0 0;
+    font-size:clamp(14px,3.4vw,16px);
+    letter-spacing:.04em;
+    max-width:30em;
+  }
+  .lede .q{color:var(--muted)}
+
+  /* ───────── 入力 ───────── */
+  .ask{display:flex;gap:10px;align-items:stretch}
+  .ask input{
+    flex:1 1 auto;
+    min-width:0;
+    font:inherit;
+    font-size:16px;              /* iOS で拡大されない大きさ */
+    font-weight:400;
+    letter-spacing:.04em;
+    color:var(--ink);
+    background:var(--paper-2);
+    border:1px solid transparent;
+    border-radius:12px;
+    padding:11px 14px;
+    outline:none;
+    transition:border-color .18s ease, background .18s ease;
+  }
+  .ask input::placeholder{color:var(--muted)}
+  .ask input:focus{border-color:var(--flow-b);background:#E2E4DC}
+  .ask input::-webkit-search-cancel-button{display:none}
+
+  button.pill{
+    font-size:13px;
+    font-weight:400;
+    letter-spacing:.08em;
+    background:transparent;
+    border:1px solid rgba(35,40,42,.28);
+    border-radius:999px;
+    padding:10px 20px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .18s ease, border-color .18s ease, color .18s ease, opacity .18s ease;
+  }
+  button.pill:hover{background:var(--paper-2);border-color:rgba(35,40,42,.5)}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  button.primary{border-color:var(--accent);color:var(--accent)}
+  button.primary:hover{background:rgba(179,59,134,.09);border-color:var(--accent)}
+  .ask button{letter-spacing:.24em;padding:10px 22px 10px 24px}
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+    margin-top:14px;
+  }
+  .chips .label{font-size:12px;letter-spacing:.12em;color:var(--muted);margin-right:2px}
+  .chips button{
+    font-size:12px;
+    letter-spacing:.1em;
+    background:transparent;
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:4px 12px;
+    cursor:pointer;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .chips button:hover{background:var(--paper-2);border-color:rgba(35,40,42,.45)}
+  .chips .random{border-style:dashed;color:var(--flow-b);border-color:rgba(61,58,168,.45)}
+
+  details.rules{margin-top:18px;font-size:13px;color:var(--muted)}
+  details.rules summary{
+    cursor:pointer;
+    letter-spacing:.12em;
+    list-style:none;
+    display:inline-flex;
+    align-items:center;
+    gap:.5em;
+  }
+  details.rules summary::-webkit-details-marker{display:none}
+  details.rules summary::before{content:"+";font-family:var(--mono);transition:transform .2s ease}
+  details.rules[open] summary::before{transform:rotate(45deg)}
+  details.rules summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+  details.rules ul{margin:.6em 0 0;padding-left:1.3em;line-height:1.9}
+
+  /* ───────── 道のり ───────── */
+  .trail{margin-top:clamp(30px,6vh,48px)}
+  .steps{list-style:none;margin:0;padding:0}
+
+  .step{
+    --c:var(--flow-a);
+    position:relative;
+    padding:0 0 22px 32px;
+    animation:appear .32s ease both;
+  }
+  @keyframes appear{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* 次の節までの線。上の節が持つ */
+  .step::before{
+    content:"";
+    position:absolute;
+    left:5px;
+    top:15px;
+    bottom:-15px;
+    width:2px;
+    background:linear-gradient(to bottom, var(--c), var(--c2, var(--c)));
+    transform-origin:top;
+  }
+  .step:last-child::before{display:none}
+  .step.reaching::before{
+    background:repeating-linear-gradient(to bottom, var(--muted) 0 4px, transparent 4px 9px);
+    opacity:.6;
+  }
+  .step.grow::before{animation:grow .38s cubic-bezier(.22,.9,.3,1) both}
+  @keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+
+  .knot{
+    position:absolute;
+    left:0;
+    top:9px;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:var(--paper);
+    border:2px solid var(--c);
+  }
+  .step.first .knot{background:var(--c)}
+
+  .n{
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    color:var(--muted);
+    margin-right:.8em;
+  }
+  .title{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:clamp(18px,4.6vw,22px);
+    letter-spacing:.08em;
+    line-height:1.45;
+    text-decoration:none;
+    overflow-wrap:anywhere;
+  }
+  a.title:hover{color:var(--accent)}
+  a.title:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+  .tag{
+    display:inline-block;
+    vertical-align:.2em;
+    margin-left:.7em;
+    font-size:11px;
+    letter-spacing:.12em;
+    color:var(--flow-b);
+    border:1px solid rgba(61,58,168,.4);
+    border-radius:999px;
+    padding:0 9px;
+    line-height:1.7;
+  }
+  .via{
+    margin:.2em 0 0;
+    font-size:13px;
+    line-height:1.75;
+    color:var(--muted);
+    overflow-wrap:anywhere;
+    max-width:34em;
+  }
+  .via mark{
+    color:var(--ink);
+    font-weight:500;
+    background:linear-gradient(transparent 60%, color-mix(in srgb, var(--mk, var(--flow-b)) 26%, transparent) 0);
+    padding:0 1px;
+  }
+
+  .step.pending .knot{
+    border:2px dashed var(--muted);
+    animation:breathe 1.1s ease-in-out infinite alternate;
+  }
+  .step.pending .label{font-size:13px;letter-spacing:.14em;color:var(--muted)}
+  @keyframes breathe{from{transform:scale(.8);opacity:.5}to{transform:scale(1.15);opacity:1}}
+
+  /* 輪 */
+  .step.ring{--c:var(--accent);--c2:var(--accent)}
+  .step.ring .knot{border-color:var(--accent)}
+  .step.flash .title{animation:flash 1.2s ease}
+  @keyframes flash{0%,100%{color:inherit}20%,60%{color:var(--accent)}}
+
+  .step.close .knot{border-color:var(--accent);transform:scale(.7)}
+  .step.close .label,.step.end .label{
+    font-size:13px;
+    letter-spacing:.14em;
+    color:var(--accent);
+  }
+  .step.close button{
+    font:inherit;
+    color:var(--accent);
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .step.end .knot{border-color:var(--muted);background:var(--muted)}
+  .step.end .label{color:var(--muted)}
+
+  /* ───────── 結果 ───────── */
+  .result{
+    margin-top:10px;
+    padding:20px 22px 22px;
+    background:var(--paper-2);
+    border-radius:14px;
+    animation:appear .4s ease both;
+  }
+  .verdict{
+    margin:0;
+    font-family:var(--display);
+    font-size:clamp(17px,4.4vw,20px);
+    font-weight:400;
+    letter-spacing:.06em;
+    line-height:1.7;
+    overflow-wrap:anywhere;
+  }
+  .verdict b{font-weight:600;color:var(--accent)}
+  .ringline{
+    margin:.7em 0 0;
+    font-size:13px;
+    letter-spacing:.06em;
+    color:var(--accent);
+    overflow-wrap:anywhere;
+  }
+  .compare{margin:.8em 0 0;font-size:13px;color:var(--muted);letter-spacing:.04em}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .copied{margin:.7em 0 0;font-size:12px;letter-spacing:.12em;color:var(--flow-b)}
+  .manual{
+    width:100%;
+    margin-top:10px;
+    font:inherit;
+    font-size:13px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--paper);
+    color:var(--ink);
+    resize:vertical;
+  }
+
+  .oops{
+    margin-top:10px;
+    padding:16px 20px;
+    border:1px dashed rgba(179,59,134,.5);
+    border-radius:14px;
+    font-size:14px;
+  }
+  .oops p{margin:0 0 12px}
+
+  /* ───────── 記録 ───────── */
+  .record{margin-top:clamp(40px,8vh,64px)}
+  .record h2{
+    font-family:var(--display);
+    font-weight:600;
+    font-size:16px;
+    letter-spacing:.22em;
+    margin:0 0 4px;
+  }
+  .record .sub{margin:0 0 14px;font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .dests{list-style:none;margin:0;padding:0}
+  .dests li{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:2px 14px;
+    padding:10px 0;
+    border-top:1px solid var(--line-2);
+  }
+  .dests li:last-child{border-bottom:1px solid var(--line-2)}
+  .dests .where{font-family:var(--display);font-weight:600;letter-spacing:.06em;overflow-wrap:anywhere}
+  .dests .where.dead{color:var(--muted);font-weight:400}
+  .dests .count{font-family:var(--mono);font-size:13px;color:var(--accent);align-self:center}
+  .dests .from{grid-column:1 / -1;font-size:12px;color:var(--muted);letter-spacing:.04em;overflow-wrap:anywhere}
+  .forget{
+    margin-top:12px;
+    font-size:12px;
+    letter-spacing:.1em;
+    color:var(--muted);
+    background:none;
+    border:none;
+    padding:4px 0;
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+
+  footer{
+    margin-top:clamp(48px,10vh,80px);
+    font-size:12px;
+    line-height:1.9;
+    color:var(--muted);
+    letter-spacing:.04em;
+  }
+  footer p{margin:0 0 .4em}
+
+  @media (prefers-reduced-motion: reduce){
+    .step,.result{animation:none}
+    .step.grow::before{animation:none}
+    .step.pending .knot{animation:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <a class="back" href="../" aria-label="あそびばへ戻る">あそびば</a>
+
+  <header>
+    <h1>たぐる</h1>
+    <p class="lede">Wikipedia の記事で、本文の最初のリンクを踏みつづける。<br><span class="q">どこから始めても、同じところへ着くのだろうか。</span></p>
+  </header>
+
+  <form class="ask" id="ask" autocomplete="off">
+    <label class="sr" for="q">はじめのことば</label>
+    <input id="q" name="q" type="search" enterkeyhint="go" maxlength="120" placeholder="ことばを入れる" required>
+    <button class="pill primary" id="go" type="submit">たぐる</button>
+  </form>
+
+  <div class="chips" id="chips">
+    <span class="label">たとえば</span>
+    <button type="button" data-q="納豆">納豆</button>
+    <button type="button" data-q="猫">猫</button>
+    <button type="button" data-q="富士山">富士山</button>
+    <button type="button" data-q="ラーメン">ラーメン</button>
+    <button type="button" data-q="東京タワー">東京タワー</button>
+    <button type="button" data-q="量子力学">量子力学</button>
+    <button type="button" class="random" id="random">おまかせ</button>
+  </div>
+
+  <details class="rules">
+    <summary>どうたどるか</summary>
+    <ul>
+      <li>記事の本文の段落にある、いちばん最初のリンクへ進みます</li>
+      <li>括弧（　）の中・注釈・表や囲みの中・斜体のリンクは数えません</li>
+      <li>まだ書かれていない記事と、記事でないページ（ファイル・カテゴリなど）は飛ばします</li>
+      <li>一度通った記事に戻ったら「輪」、たどれるリンクがなければ「行き止まり」です</li>
+    </ul>
+  </details>
+
+  <section class="trail" id="trail" hidden>
+    <h2 class="sr">たどった道</h2>
+    <ol class="steps" id="steps"></ol>
+    <div id="tail"></div>
+  </section>
+
+  <section class="record" id="record" hidden>
+    <h2>これまでに着いたところ</h2>
+    <p class="sub">この端末でたぐった記録です。</p>
+    <ul class="dests" id="dests"></ul>
+    <button type="button" class="forget" id="forget">記録を消す</button>
+  </section>
+
+  <p class="sr" id="say" aria-live="polite"></p>
+
+  <footer>
+    <p>記事は <a href="https://ja.wikipedia.org/" target="_blank" rel="noopener">Wikipedia 日本語版</a> からその場で読みこんでいます。抜き出した文章のライセンスは <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja" target="_blank" rel="noopener">CC BY-SA 4.0</a> で、記事名から元の記事へ飛べます。</p>
+    <p>英語版では、こうしてたどると多くの記事が「Philosophy」に着くことが知られています。日本語版はどうでしょう。</p>
+  </footer>
+  <noscript><p>このページは JavaScript で動きます。</p></noscript>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ───────── 設定 ─────────
+  const CFG = {
+    MAX_STEPS: 80,        // ここまでたどっても終わらなければ打ち切る
+    CANDIDATES: 4,        // 1記事から控えておくリンクの数（自分への転送などで使えないときの予備）
+    PACE: 480,            // 新しく読みこんだ記事を出すまでの最短の間（ミリ秒）
+    PACE_CACHED: 170,     // 覚えている記事のとき
+    TTL: 3 * 864e5,       // 読みこんだ記事を覚えておく時間
+    CACHE_MAX: 800,       // 覚えておく記事の数
+    LOG_MAX: 80,          // 記録しておく「はじめのことば」の数
+  };
+
+  const API = "https://ja.wikipedia.org/w/api.php";
+  const WIKI = "https://ja.wikipedia.org/wiki/";
+  const KEY_CACHE = "taguru:cache:v1";
+  const KEY_LOG = "taguru:log:v1";
+
+  const $ = id => document.getElementById(id);
+  const form = $("ask"), input = $("q"), goBtn = $("go");
+  const trail = $("trail"), steps = $("steps"), tail = $("tail");
+  const record = $("record"), dests = $("dests"), say = $("say");
+
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const RGB_A = [22, 160, 166], RGB_B = [61, 58, 168];
+
+  // ───────── 保存 ─────────
+  function loadJSON(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const v = JSON.parse(raw);
+      return v && typeof v === "object" ? v : fallback;
+    } catch (e) { return fallback; }
+  }
+  function saveJSON(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* 覚えられなくても遊べる */ }
+  }
+
+  // 記事 → その記事から出ていく最初のリンクたち
+  const cache = loadJSON(KEY_CACHE, {});
+  if (!cache.p || typeof cache.p !== "object") cache.p = {};
+  if (!cache.a || typeof cache.a !== "object") cache.a = {};
+
+  let cacheTimer = 0;
+  function persistCache() {
+    clearTimeout(cacheTimer);
+    cacheTimer = setTimeout(() => {
+      const keys = Object.keys(cache.p);
+      if (keys.length > CFG.CACHE_MAX) {
+        keys.sort((x, y) => cache.p[x].t - cache.p[y].t);
+        for (const k of keys.slice(0, keys.length - CFG.CACHE_MAX)) delete cache.p[k];
+        for (const [from, to] of Object.entries(cache.a)) if (!cache.p[to]) delete cache.a[from];
+      }
+      saveJSON(KEY_CACHE, cache);
+    }, 400);
+  }
+  function fromCache(title) {
+    const resolved = cache.a[title] || title;
+    const e = cache.p[resolved];
+    if (!e || !Array.isArray(e.c) || Date.now() - e.t > CFG.TTL) return null;
+    return { title: resolved, cands: e.c };
+  }
+  function toCache(asked, resolved, cands) {
+    cache.p[resolved] = { t: Date.now(), c: cands };
+    if (asked !== resolved) cache.a[asked] = resolved;
+    persistCache();
+  }
+
+  let log = loadJSON(KEY_LOG, []);
+  if (!Array.isArray(log)) log = [];
+
+  // ───────── Wikipedia ─────────
+  const sleep = (ms, signal) => new Promise((ok, ng) => {
+    if (signal && signal.aborted) return ng(new DOMException("aborted", "AbortError"));
+    const t = setTimeout(ok, ms);
+    if (signal) signal.addEventListener("abort", () => { clearTimeout(t); ng(new DOMException("aborted", "AbortError")); }, { once: true });
+  });
+
+  async function api(params, signal) {
+    const u = new URL(API);
+    const all = { format: "json", formatversion: "2", origin: "*", ...params };
+    for (const k in all) u.searchParams.set(k, all[k]);
+    let wait = 1500;
+    for (let attempt = 0; ; attempt++) {
+      let res;
+      try {
+        res = await fetch(u, { signal });
+      } catch (e) {
+        if (e.name === "AbortError") throw e;
+        if (attempt >= 2) throw new Error("network");
+        await sleep(wait, signal); wait *= 2;
+        continue;
+      }
+      if (res.ok) return res.json();
+      if ((res.status === 429 || res.status >= 500) && attempt < 2) {
+        const ra = Number(res.headers.get("Retry-After"));
+        await sleep(ra > 0 ? Math.min(ra, 10) * 1000 : wait, signal); wait *= 2;
+        continue;
+      }
+      throw new Error("http " + res.status);
+    }
+  }
+
+  // 記事を読む。無い記事なら null
+  async function read(title, signal) {
+    const hit = fromCache(title);
+    if (hit) return { ...hit, cached: true };
+
+    const base = {
+      action: "parse", page: title, prop: "text", redirects: "1",
+      disableeditsection: "1", disablelimitreport: "1",
+      maxage: "3600", smaxage: "86400",
+    };
+    const j = await api({ ...base, section: "0" }, signal);
+    if (j.error) {
+      if (j.error.code === "missingtitle" || j.error.code === "invalidtitle") return null;
+      throw new Error(j.error.code || "api");
+    }
+    const resolved = j.parse.title;
+    let cands = firstLinks(j.parse.text);
+    if (!cands.length) {                       // 冒頭に無ければ本文ぜんぶから
+      const k = await api(base, signal);
+      if (!k.error) cands = firstLinks(k.parse.text);
+    }
+    toCache(title, resolved, cands);
+    return { title: resolved, cands, cached: false };
+  }
+
+  async function search(q, signal) {
+    const j = await api({ action: "query", list: "search", srsearch: q, srlimit: "1", srnamespace: "0", srprop: "" }, signal);
+    const s = j.query && j.query.search;
+    return s && s[0] ? s[0].title : null;
+  }
+
+  async function randomTitle(signal) {
+    const j = await api({ action: "query", list: "random", rnnamespace: "0", rnlimit: "1", rnfilterredir: "nonredirects" }, signal);
+    const r = j.query && j.query.random;
+    return r && r[0] ? r[0].title : null;
+  }
+
+  // ───────── 最初のリンクを探す ─────────
+  // 段落に入る前に消すもの：注釈・ルビの読み・スタイル・印刷しない部品
+  const DROP = "style, script, link, meta, sup, rt, rp, .reference, .mw-ref, .noprint, .mw-empty-elt, #coordinates, .mw-editsection";
+
+  // 記事でない名前空間
+  const NS = new Set([
+    "特別", "special", "利用者", "user", "wikipedia", "wp", "project", "プロジェクト",
+    "ファイル", "file", "画像", "image", "mediawiki", "template", "help", "category",
+    "portal", "ポータル", "module", "モジュール", "media", "メディア", "ノート", "talk",
+    "timedtext", "gadget", "gadget definition", "draft",
+  ]);
+
+  function titleOf(a) {
+    const cl = a.classList;
+    if (cl.contains("new") || cl.contains("mw-selflink") || cl.contains("selflink") || cl.contains("extiw") || cl.contains("external")) return null;
+    const href = a.getAttribute("href") || "";
+    if (/[?&]redlink=1/.test(href)) return null;
+    const m = href.match(/^(?:\/wiki\/|\.\/)([^?#]+)/);
+    if (!m) return null;
+    let t = m[1];
+    try { t = decodeURIComponent(t); } catch (e) { /* そのまま使う */ }
+    t = t.replace(/_/g, " ").trim();
+    if (!t) return null;
+    const i = t.indexOf(":");
+    if (i > 0) {
+      const ns = t.slice(0, i).trim().toLowerCase();
+      if (NS.has(ns) || /(?:‐|-)ノート$|会話$| talk$/.test(ns)) return null;
+    }
+    return t;
+  }
+
+  // 本文の段落か（表・囲み・図の中ではないか）
+  function isMain(el, root) {
+    for (let n = el.parentElement; n && n !== root; n = n.parentElement) {
+      if (n.tagName === "SECTION") continue;
+      if (n.tagName === "DIV" && n.classList.contains("mw-parser-output")) continue;
+      return false;
+    }
+    return true;
+  }
+
+  // 段落を「文字」と「リンク」の並びにする
+  function flatten(node, toks, italic) {
+    for (const c of node.childNodes) {
+      if (c.nodeType === 3) toks.push({ s: c.data });
+      else if (c.nodeType === 1) {
+        if (c.tagName === "A") toks.push({ a: c, s: c.textContent, it: italic });
+        else flatten(c, toks, italic || c.tagName === "I" || c.tagName === "EM");
+      }
+    }
+  }
+
+  function snippet(toks, i) {
+    const clean = s => s.replace(/\s+/g, " ");
+    let before = clean(toks.slice(0, i).map(t => t.s).join(""));
+    let after = clean(toks.slice(i + 1).map(t => t.s).join(""));
+    const cut = before.lastIndexOf("。");
+    if (cut >= 0) before = before.slice(cut + 1);
+    before = before.trimStart();
+    if (before.length > 40) before = "…" + before.slice(-40);
+    const end = after.indexOf("。");
+    if (end >= 0 && end < 36) after = after.slice(0, end + 1);
+    else if (after.length > 36) after = after.slice(0, 36) + "…";
+    return [before, clean(toks[i].s).trim(), after.trimEnd()];
+  }
+
+  function harvest(blocks, out, seen) {
+    for (const b of blocks) {
+      const toks = [];
+      flatten(b, toks, false);
+      let depth = 0;
+      for (let i = 0; i < toks.length; i++) {
+        const tk = toks[i];
+        if (!tk.a) {
+          for (const ch of tk.s) {
+            if (ch === "(" || ch === "（") depth++;
+            else if ((ch === ")" || ch === "）") && depth > 0) depth--;
+          }
+          continue;
+        }
+        if (depth > 0 || tk.it || !tk.s.trim()) continue;
+        const t = titleOf(tk.a);
+        if (!t || seen.has(t)) continue;
+        seen.add(t);
+        out.push([t, ...snippet(toks, i)]);
+        if (out.length >= CFG.CANDIDATES) return;
+      }
+    }
+  }
+
+  // [[行き先, 前の文, リンクの文字, 後の文], …]
+  function firstLinks(html) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const root = doc.querySelector(".mw-parser-output") || doc.body;
+    root.querySelectorAll(DROP).forEach(n => n.remove());
+    const out = [], seen = new Set();
+    harvest([...root.querySelectorAll("p")].filter(p => isMain(p, root)), out, seen);
+    if (!out.length) {   // 段落にリンクが無い記事（曖昧さ回避など）は箇条書きから
+      harvest([...root.querySelectorAll("ul > li, ol > li")].filter(li => isMain(li.parentElement, root)), out, seen);
+    }
+    return out;
+  }
+
+  // ───────── 描く ─────────
+  function colorAt(i) {
+    const t = 1 - Math.exp(-i / 7);
+    const c = RGB_A.map((a, k) => Math.round(a + (RGB_B[k] - a) * t));
+    return `rgb(${c.join(",")})`;
+  }
+  const wikiURL = t => WIKI + encodeURIComponent(t.replace(/ /g, "_"));
+  const pad = i => String(i).padStart(2, "0");
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function follow(node) {
+    if (reduce) node.scrollIntoView({ block: "nearest" });
+    else node.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  let pendingLi = null;
+  function showPending(text) {
+    hidePending();
+    const li = el("li", "step pending");
+    li.append(el("span", "knot"), el("span", "label", text));
+    const prev = steps.lastElementChild;
+    if (prev) prev.classList.add("reaching");
+    steps.append(li);
+    pendingLi = li;
+    follow(li);
+  }
+  function hidePending() {
+    if (!pendingLi) return;
+    pendingLi.remove();
+    pendingLi = null;
+    const prev = steps.lastElementChild;
+    if (prev) prev.classList.remove("reaching");
+  }
+
+  function renderNode(me, i) {
+    const p = me.path[i];
+    const li = el("li", "step" + (i === 0 ? " first" : ""));
+    li.id = "s" + i;
+    li.style.setProperty("--c", colorAt(i));
+    const a = el("a", "title", p.title);
+    a.href = wikiURL(p.title);
+    a.target = "_blank";
+    a.rel = "noopener";
+    li.append(el("span", "knot"), el("span", "n", pad(i)), a);
+    if (i > 0 && !me.merged && me.seen.has(p.title)) {
+      me.merged = true;
+      li.append(el("span", "tag", "前にも通った道"));
+    }
+    const prev = steps.lastElementChild;
+    if (prev) {
+      prev.style.setProperty("--c2", colorAt(i));
+      prev.classList.remove("grow");
+      if (!reduce) { void prev.offsetWidth; prev.classList.add("grow"); }
+    }
+    steps.append(li);
+    follow(li);
+  }
+
+  function renderVia(i, via, nextColor) {
+    const li = $("s" + i);
+    if (!li) return;
+    const p = el("p", "via");
+    const mk = el("mark", null, via[2]);
+    mk.style.setProperty("--mk", nextColor);
+    p.append(document.createTextNode(via[1]), mk, document.createTextNode(via[3]));
+    li.append(p);
+  }
+
+  // ───────── たぐる ─────────
+  let run = null;
+
+  function stop() {
+    if (run) run.ctrl.abort();
+    run = null;
+    hidePending();
+  }
+
+  function pastTitles() {
+    const s = new Set();
+    for (const r of log) if (Array.isArray(r.path)) for (const t of r.path) s.add(t);
+    return s;
+  }
+
+  async function readPaced(title, signal) {
+    const t0 = performance.now();
+    const p = await read(title, signal);
+    const min = p && p.cached ? CFG.PACE_CACHED : CFG.PACE;
+    const left = min - (performance.now() - t0);
+    if (left > 0) await sleep(left, signal);
+    return p;
+  }
+
+  function push(me, p) {
+    me.path.push(p);
+    me.index.set(p.title, me.path.length - 1);
+    renderNode(me, me.path.length - 1);
+  }
+
+  async function begin(query) {
+    query = query.trim();
+    if (!query) return;
+    stop();
+    const me = { query, path: [], index: new Map(), ctrl: new AbortController(), seen: pastTitles(), merged: false };
+    run = me;
+    steps.textContent = "";
+    tail.textContent = "";
+    trail.hidden = false;
+    say.textContent = "";
+    showPending("さがしています…");
+    const signal = me.ctrl.signal;
+    try {
+      let p = await read(query, signal);
+      if (!p) {
+        const hit = await search(query, signal);
+        if (hit) p = await read(hit, signal);
+      }
+      if (run !== me) return;
+      hidePending();
+      if (!p) return notFound(me);
+      me.start = p.title;
+      setURL(p.title);
+      push(me, p);
+      await walk(me);
+    } catch (e) {
+      if (e.name === "AbortError" || run !== me) return;
+      hidePending();
+      oops(me, () => begin(query));
+    }
+  }
+
+  async function walk(me) {
+    const signal = me.ctrl.signal;
+    try {
+      for (;;) {
+        const i = me.path.length - 1;
+        const page = me.path[i];
+        if (i >= CFG.MAX_STEPS) return finish(me, { kind: "cap" });
+        showPending("たぐっています…");
+        let next = null, via = null;
+        for (const c of page.cands) {
+          const p = await readPaced(c[0], signal);
+          if (run !== me) return;
+          if (!p || p.title === page.title) continue;   // 消えた記事・自分への転送は飛ばす
+          next = p; via = c;
+          break;
+        }
+        hidePending();
+        if (!next) return finish(me, { kind: "dead" });
+        const j = me.index.get(next.title);
+        renderVia(i, via, j !== undefined ? "var(--accent)" : colorAt(i + 1));
+        if (j !== undefined) return finish(me, { kind: "ring", from: j });
+        push(me, next);
+      }
+    } catch (e) {
+      if (e.name === "AbortError" || run !== me) return;
+      hidePending();
+      oops(me, () => {
+        me.ctrl = new AbortController();
+        tail.textContent = "";
+        walk(me);
+      });
+    }
+  }
+
+  // ───────── 終わり ─────────
+  function ringOf(me, from) {
+    return me.path.slice(from).map(p => p.title);
+  }
+  // 輪は入り口が違っても同じ輪。いちばん若い名前から読む
+  function canonical(ring) {
+    let k = 0;
+    for (let i = 1; i < ring.length; i++) if (ring[i].localeCompare(ring[k], "ja") < 0) k = i;
+    return ring.slice(k).concat(ring.slice(0, k));
+  }
+  function ringLabel(ring) {
+    if (ring.length === 2) return ring[0] + " ⇄ " + ring[1];
+    return ring.concat(ring[0]).join(" → ");
+  }
+
+  function finish(me, r) {
+    const n = me.path.length;
+    let entry;
+
+    if (r.kind === "ring") {
+      // 色は節ごとに style で持っているので、輪の色もそこへ書く
+      const before = $("s" + (r.from - 1));
+      if (before) before.style.setProperty("--c2", "var(--accent)");
+      for (let i = r.from; i < n; i++) {
+        const li = $("s" + i);
+        li.classList.add("ring");
+        li.style.setProperty("--c", "var(--accent)");
+        li.style.setProperty("--c2", "var(--accent)");
+        li.querySelectorAll("mark").forEach(m => m.style.setProperty("--mk", "var(--accent)"));
+      }
+      const back = el("li", "step close");
+      back.append(el("span", "knot"));
+      const lab = el("span", "label");
+      const btn = el("button", null, "「" + me.path[r.from].title + "」");
+      btn.type = "button";
+      btn.addEventListener("click", () => {
+        const t = $("s" + r.from);
+        if (!t) return;
+        t.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+        t.classList.remove("flash"); void t.offsetWidth; t.classList.add("flash");
+      });
+      lab.append(document.createTextNode("↺ "), btn, document.createTextNode(`（${pad(r.from)}）へ戻る`));
+      back.append(lab);
+      steps.append(back);
+      const enter = ringOf(me, r.from);          // 入った順（結果と共有に使う）
+      const ring = canonical(enter);              // 入り口によらない形（記録をまとめるのに使う）
+      entry = { kind: "ring", key: ring.join("␟"), ring, enter, steps: r.from, len: n - r.from };
+    } else if (r.kind === "dead") {
+      const end = el("li", "step end");
+      end.append(el("span", "knot"), el("span", "label", "行き止まり — 本文にたどれるリンクがありません"));
+      steps.append(end);
+      const last = me.path[n - 1].title;
+      entry = { kind: "dead", key: "dead␟" + last, last, steps: n - 1 };
+    } else {
+      const end = el("li", "step end");
+      end.append(el("span", "knot"), el("span", "label", `${CFG.MAX_STEPS}手で打ち切り`));
+      steps.append(end);
+      entry = { kind: "cap", key: "cap", steps: n - 1 };
+    }
+
+    entry.start = me.start;
+    entry.path = me.path.map(p => p.title).slice(0, CFG.MAX_STEPS + 1);
+    entry.at = Date.now();
+    log = log.filter(x => x.start !== entry.start);
+    log.unshift(entry);
+    if (log.length > CFG.LOG_MAX) log.length = CFG.LOG_MAX;
+    saveJSON(KEY_LOG, log);
+
+    showResult(me, entry);
+    renderRecord();
+    run = null;
+  }
+
+  function verdictOf(e) {
+    const s = "「" + e.start + "」";
+    if (e.kind === "ring" && e.steps > 0) return { html: [s + "から ", b(e.steps), " 手で、", b(e.len), " つの記事がめぐる輪に入りました。"], text: `${s}から本文の最初のリンクをたぐったら、${e.steps}手で「${ringLabel(e.enter || e.ring)}」の輪に入った。` };
+    if (e.kind === "ring") return { html: [s + "は、", b(e.len), " つの記事がめぐる輪のひとつでした。"], text: `${s}から本文の最初のリンクをたぐったら、${e.len}手でもとの記事に戻ってきた。` };
+    if (e.kind === "dead") return { html: [s + "から ", b(e.steps), " 手、「" + e.last + "」で行き止まりでした。"], text: `${s}から本文の最初のリンクをたぐったら、${e.steps}手目の「${e.last}」で行き止まりだった。` };
+    return { html: [s + "から ", b(CFG.MAX_STEPS), " 手たぐっても、まだ続いています。"], text: `${s}から本文の最初のリンクを${CFG.MAX_STEPS}手たぐっても、終わらなかった。` };
+  }
+  function b(x) { return el("b", null, String(x)); }
+
+  function shareURL(start) {
+    return location.origin + location.pathname + "?q=" + encodeURIComponent(start);
+  }
+
+  function showResult(me, e) {
+    tail.textContent = "";
+    const box = el("div", "result");
+    const v = verdictOf(e);
+    const p = el("p", "verdict");
+    for (const part of v.html) p.append(typeof part === "string" ? document.createTextNode(part) : part);
+    box.append(p);
+    if (e.kind === "ring") box.append(el("p", "ringline", "輪：" + ringLabel(e.enter || e.ring)));
+
+    const total = log.length;
+    const same = log.filter(x => x.key === e.key).length;
+    if (total >= 2) {
+      const where = e.kind === "ring" ? "この輪に入っています" : e.kind === "dead" ? "ここで行き止まりです" : "打ち切りになっています";
+      box.append(el("p", "compare", `これまでにたぐった ${total} 語のうち、${same} 語が${where}。`));
+    }
+
+    const act = el("div", "actions");
+    const canShare = typeof navigator.share === "function";
+    const share = el("button", "pill primary", canShare ? "結果を共有" : "結果をコピー");
+    share.type = "button";
+    const again = el("button", "pill", "べつのことばで");
+    again.type = "button";
+    act.append(share, again);
+    box.append(act);
+    tail.append(box);
+
+    const text = v.text + "\n#たぐる";
+    const url = shareURL(e.start);
+    share.addEventListener("click", async () => {
+      if (canShare) {
+        try { await navigator.share({ text, url }); return; }
+        catch (err) { if (err && err.name === "AbortError") return; }
+      }
+      try {
+        await navigator.clipboard.writeText(text + "\n" + url);
+        note(box, "コピーしました");
+      } catch (err) {
+        const ta = el("textarea", "manual");
+        ta.readOnly = true;
+        ta.rows = 3;
+        ta.value = text + "\n" + url;
+        box.querySelector(".manual")?.remove();
+        box.append(ta);
+        ta.select();
+      }
+    });
+    again.addEventListener("click", () => {
+      input.value = "";
+      input.focus();
+      window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    });
+
+    say.textContent = v.text;
+    follow(box);
+  }
+
+  function note(box, text) {
+    let n = box.querySelector(".copied");
+    if (!n) { n = el("p", "copied"); box.append(n); }
+    n.textContent = text;
+  }
+
+  function notFound(me) {
+    run = null;
+    trail.hidden = false;
+    tail.textContent = "";
+    const box = el("div", "oops");
+    box.append(el("p", null, `「${me.query}」の記事は見つかりませんでした。ほかのことばで試してください。`));
+    tail.append(box);
+    say.textContent = box.textContent;
+  }
+
+  function oops(me, retry) {
+    tail.textContent = "";
+    const box = el("div", "oops");
+    box.append(el("p", null, "Wikipedia に届きませんでした。少し待ってから、もう一度どうぞ。"));
+    const btn = el("button", "pill primary", me.path.length ? "続きから" : "もう一度");
+    btn.type = "button";
+    btn.addEventListener("click", () => {
+      if (run !== me) return;
+      retry();
+    });
+    box.append(btn);
+    tail.append(box);
+    say.textContent = "Wikipedia に届きませんでした。";
+    follow(box);
+  }
+
+  // ───────── 記録 ─────────
+  function renderRecord() {
+    dests.textContent = "";
+    if (!log.length) { record.hidden = true; return; }
+    const groups = new Map();
+    for (const e of log) {
+      if (!e || !e.key) continue;
+      let g = groups.get(e.key);
+      if (!g) groups.set(e.key, g = { e, starts: [] });
+      g.starts.push(e.start);
+    }
+    const list = [...groups.values()].sort((x, y) => y.starts.length - x.starts.length).slice(0, 8);
+    for (const g of list) {
+      const li = el("li");
+      const e = g.e;
+      const where = e.kind === "ring" ? el("span", "where", ringLabel(e.ring))
+                  : e.kind === "dead" ? el("span", "where dead", "「" + e.last + "」で行き止まり")
+                  : el("span", "where dead", "打ち切り");
+      const more = g.starts.length > 6 ? ` ほか${g.starts.length - 6}語` : "";
+      li.append(where, el("span", "count", g.starts.length + "語"), el("span", "from", g.starts.slice(0, 6).join("・") + more + " から"));
+      dests.append(li);
+    }
+    record.hidden = false;
+  }
+
+  $("forget").addEventListener("click", () => {
+    if (!confirm("これまでの記録を消しますか？")) return;
+    log = [];
+    saveJSON(KEY_LOG, log);
+    renderRecord();
+  });
+
+  // ───────── 入力 ─────────
+  function setURL(start) {
+    try { history.replaceState(null, "", "?q=" + encodeURIComponent(start)); } catch (e) { /* 共有リンクが作れないだけ */ }
+  }
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    begin(input.value);
+  });
+
+  $("chips").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-q]");
+    if (!btn) return;
+    input.value = btn.dataset.q;
+    begin(btn.dataset.q);
+  });
+
+  $("random").addEventListener("click", async () => {
+    stop();
+    const ctrl = new AbortController();
+    const me = { ctrl, query: "", path: [] };
+    run = me;
+    steps.textContent = "";
+    tail.textContent = "";
+    trail.hidden = false;
+    showPending("記事をえらんでいます…");
+    try {
+      const t = await randomTitle(ctrl.signal);
+      if (run !== me) return;
+      hidePending();
+      if (!t) throw new Error("random");
+      input.value = t;
+      begin(t);
+    } catch (e) {
+      if (e.name === "AbortError" || run !== me) return;
+      hidePending();
+      oops(me, () => $("random").click());
+    }
+  });
+
+  renderRecord();
+  const q0 = new URLSearchParams(location.search).get("q");
+  if (q0 && q0.trim()) {
+    input.value = q0.trim();
+    begin(q0);
+  }
+})();
+</script>
+</body>
+</html>

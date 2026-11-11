@@ -1,19 +1,20 @@
 // くみたてる — 判定の検証（仕様書 9-2）
 // node tools/judge-test.mjs [閾値] [大きさの係数]
+// 既定値はゲームの CFG（kumitateru/index.html）と同じ。どこから走らせてもよい
 
 import fs from "node:fs";
 
-const D = JSON.parse(fs.readFileSync("data/kumitateru.json", "utf8"));
+const D = JSON.parse(fs.readFileSync(new URL("../kumitateru/data/kumitateru.json", import.meta.url), "utf8"));
 const PARTS = D.parts, KANJI = D.kanji;
 
-const OK = Number(process.argv[2] ?? 14);
-const WS = Number(process.argv[3] ?? 0.25);   // 大きさのずれの重み
+const OK = Number(process.argv[2] ?? 13);
+const WS = Number(process.argv[3] ?? 0.15);   // 大きさのずれの重み
 
 // 部品の集合 → その集合になる漢字たち
 const byKey = new Map();
 for (const [ch, v] of Object.entries(KANJI)) {
   if (v.parts.length < 2) continue;           // 1部品の字は組み立てられない
-  const k = [...v.parts].sort().join("");
+  const k = [...v.parts].sort().join("\0");     // ゲームと同じ区切り
   (byKey.get(k) ?? byKey.set(k, []).get(k)).push(ch);
 }
 const buildable = Object.keys(KANJI).filter(ch => KANJI[ch].parts.length >= 2);
@@ -42,7 +43,7 @@ function layoutError(ch, placed) {
 
 // いま置いてある配置から、いちばん近い漢字を選ぶ
 function judge(placed) {
-  const key = placed.map(p => p.el).sort().join("");
+  const key = placed.map(p => p.el).sort().join("\0");
   const cands = byKey.get(key);
   if (!cands) return { hit: null, err: Infinity, cands: 0 };
   let best = null, bestErr = Infinity;

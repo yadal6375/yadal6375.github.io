@@ -8,7 +8,9 @@ KanjiVG (CC BY-SA 3.0 / http://kanjivg.tagaini.net) から
 
   python3 tools/extract.py --verify            外接矩形の検算だけ
   python3 tools/extract.py --survey            粒度 2/3/4 の比較
-  python3 tools/extract.py --out data/kumitateru.json --min-strokes 2
+  python3 tools/extract.py --out kumitateru/data/kumitateru.json --min-strokes 2
+
+リポジトリのルートで走らせる。kanjivg/ と data/joyo.tsv はルートに置く
 """
 
 import argparse
@@ -548,7 +550,7 @@ def main():
         # 正解の重ね表示は別ファイル。無くても遊べるので後から読む
         strokes[ch] = [round_d(d, 1) for d in v["d"]]
 
-    os.makedirs(os.path.dirname(a.out), exist_ok=True)
+    os.makedirs(os.path.dirname(a.out) or ".", exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
     sp = os.path.join(os.path.dirname(a.out), "strokes.json")

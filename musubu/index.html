@@ -54,6 +54,7 @@
   }
 
   .app{
+    height:100vh;      /* dvh が使えない環境の代わり。無いと盤が高さ0になり何も出ない */
     height:100dvh;
     display:flex;
     flex-direction:column;
@@ -562,7 +563,9 @@
       ctx.fillStyle = "rgba(35,40,42,.055)";
       const r = cell * 0.18;
       ctx.beginPath();
-      ctx.roundRect(hx + 2, hy + 2, cell - 4, cell - 4, r);
+      // roundRect が無い環境で投げると、loop が止まったまま running が戻らず盤が固まる
+      if (ctx.roundRect) ctx.roundRect(hx + 2, hy + 2, cell - 4, cell - 4, r);
+      else ctx.rect(hx + 2, hy + 2, cell - 4, cell - 4);
       ctx.fill();
     }
 
@@ -736,8 +739,15 @@
     kick();
   }
 
-  cv.addEventListener("pointerdown", e => { e.preventDefault(); rotate(cellFromEvent(e), 1); });
-  cv.addEventListener("contextmenu", e => { e.preventDefault(); rotate(cellFromEvent(e), -1); });
+  // 右クリック（Mac の control+クリック）で逆に回す。
+  // pointerdown は右ボタンでも来るので、contextmenu の側でも回すと +1 と −1 が打ち消し合い、
+  // 盤は動かないのにタップだけ2つ増える。回すのは pointerdown だけにする
+  cv.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    if (e.button === 2 || (e.button === 0 && e.ctrlKey)) rotate(cellFromEvent(e), -1);
+    else if (e.button === 0) rotate(cellFromEvent(e), 1);
+  });
+  cv.addEventListener("contextmenu", e => e.preventDefault());   // 長押しのメニューも出さない
   cv.addEventListener("pointermove", e => {
     if (e.pointerType !== "mouse" || solved || locked) return;
     const i = cellFromEvent(e);

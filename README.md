@@ -23,17 +23,20 @@
 
 ### データの作りかた
 
+リポジトリのルートで走らせます。
+
 ```
 git clone --depth 1 https://github.com/KanjiVG/kanjivg.git
-curl -sSLo data/joyo.tsv https://raw.githubusercontent.com/hiroshi-manabe/Joyo-Kanji-List/master/joyo.tsv
+curl -sSL --create-dirs -o data/joyo.tsv https://raw.githubusercontent.com/hiroshi-manabe/Joyo-Kanji-List/master/joyo.tsv
 
 python3 tools/extract.py --verify                              # 外接矩形の検算
 python3 tools/extract.py --survey                              # 部品の粒度を比べる
-python3 tools/extract.py --min-strokes 2 --out data/kumitateru.json
+python3 tools/extract.py --min-strokes 2 --out kumitateru/data/kumitateru.json
 node tools/judge-test.mjs 13 0.15                              # 判定の検証
 ```
 
-`kanjivg/`（90MB）と `data/joyo.tsv` はこのリポジトリには含みません。上のコマンドで取得してください。
+`kanjivg/`（90MB）と `data/joyo.tsv`（どちらもルートに置きます）はこのリポジトリには含みません。上のコマンドで取得してください。
+`strokes.json` は `--out` と同じフォルダに書き出されます。
 
 ### 判定の設定
 

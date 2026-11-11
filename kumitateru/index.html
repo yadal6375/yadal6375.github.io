@@ -59,6 +59,7 @@
   button{font-family:inherit;color:inherit}
 
   .app{
+    height:100vh;      /* dvh が使えない環境の代わり */
     height:100dvh;
     display:flex;
     flex-direction:column;
@@ -532,9 +533,11 @@
 
   // ───────── 判定 ─────────
   let settleTimer = null;
+  let revealGen = 0;          // 「答えを見る」の世代。台が変わったら、流れている演出は古い
 
   function scheduleJudge() {
     clearTimeout(settleTimer);
+    revealGen++;              // 演出の途中で置く・消す・動かすと、もう同じ字の答えではない
     clearAnswer();
     $("clear").disabled = !placed.length;
     $("reveal").disabled = true;
@@ -552,7 +555,7 @@
   }
 
   function candidates() {
-    return byKey.get(placed.map(p => p.el).sort().join(" ")) || [];
+    return byKey.get(placed.map(p => p.el).sort().join("\0")) || [];
   }
 
   function judge() {
@@ -608,8 +611,15 @@
     const isNew = !found.has(kanji);
     const before = unlocked();
     found.add(kanji);
-    if (byReveal) revealed.add(kanji);
-    if (isNew) { lastMade = kanji; save(); }
+    // 「答えを見た」印は、はじめて会った字を答えで通したときだけ付ける。
+    // 自力で組んだことのある字に付けると、保存されないまま画面だけ灰色になる。
+    // 印の付いた字をあとで自力で組めたら、印を外す
+    let changed = isNew;
+    if (byReveal) { if (isNew) revealed.add(kanji); }
+    else if (revealed.delete(kanji)) changed = true;
+    if (isNew) lastMade = kanji;
+    // 実演の字は保存しない。途中で閉じられても、実演前の持ちもののまま残る
+    if (changed && !tourCancel) save();
 
     const t = KANJI[kanji];
     const quiet = byReveal ? " quiet" : "";
@@ -656,6 +666,7 @@
     }
     clearTimeout(settleTimer);
     $("reveal").disabled = true;
+    const gen = ++revealGen;
 
     // 正解の配置を、いまの置き方に近いほうから割り当てる
     const t = KANJI[best];
@@ -682,7 +693,7 @@
 
     let ended = false;
     function finish() {
-      if (ended) return;
+      if (ended || gen !== revealGen) return;
       ended = true;
       placed.forEach((p, i) => {
         const g = goals[i]; if (!g) return;
@@ -695,7 +706,7 @@
 
     const t0 = performance.now();
     (function step(now) {
-      if (ended) return;
+      if (ended || gen !== revealGen) return;
       const u = Math.min(1, (now - t0) / T);
       const e = 1 - Math.pow(1 - u, 3);           // 終わりでゆっくり止まる
       placed.forEach((p, i) => {
@@ -739,6 +750,7 @@
     const it = pick(e, l);
     if (!it) { select(null); return; }
     select(it);
+    revealGen++;                               // 答えの演出中につかんだら、演出はそこでやめる
     if (e.target.classList.contains("grip")) {
       // 角をつまんだ → 大きさを変える
       const d0 = Math.hypot(l.x - it.x, l.y - it.y) || 1;
@@ -816,6 +828,9 @@
       b.textContent = el;
     }
     b.addEventListener("click", () => {
+      // 実演を畳んだ直後は、棚が描き直される前のボタンを押していることがある。
+      // 実演で増えた部品（林など）は、もう持っていないので置かない
+      if (!shelf().includes(el) && !found.has(el)) return;
       const n = placed.length;
       const [x, y] = SPOTS[n % SPOTS.length];
       const j = n >= SPOTS.length ? (Math.random() * 12 - 6) : 0;
@@ -983,10 +998,12 @@
 
   $("tourSkip").addEventListener("click", () => { if (tourCancel) tourCancel(); });
   $("howto").addEventListener("click", () => tour());
-  // 遊ぶ人が触ったら、実演はそこで畳む。触った操作そのものは、そのまま通す
+  // 遊ぶ人が触ったら、実演はそこで畳む。触った操作そのものは、そのまま通す。
+  // 棚は pointerdown で畳むと、畳むときの描き直しで押したボタンが消え、click が届かない。
+  // click の捕捉で畳めば、押したボタンの click はそのあと届く
   const bailTour = () => { if (tourCancel) tourCancel(); };
   board.addEventListener("pointerdown", bailTour, true);
-  $("tray").addEventListener("pointerdown", bailTour, true);
+  document.querySelector(".app").addEventListener("click", bailTour, true);
 
   // ───────── 起動 ─────────
   async function boot() {
@@ -999,7 +1016,7 @@
     for (const [el, p] of Object.entries(PARTS)) strokesOf.set(el, p.strokes);
     for (const [ch, v] of Object.entries(KANJI)) {
       if (v.parts.length < 2) continue;      // 1部品の字は組み立てられない
-      const k = [...v.parts].sort().join(" ");
+      const k = [...v.parts].sort().join("\0");
       if (!byKey.has(k)) byKey.set(k, []);
       byKey.get(k).push(ch);
     }
